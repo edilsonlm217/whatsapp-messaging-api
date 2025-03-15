@@ -1,12 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { makeWASocket, WASocket, useMultiFileAuthState, DisconnectReason } from '@whiskeysockets/baileys';
+import { makeWASocket, WASocket, useMultiFileAuthState, DisconnectReason, ConnectionState } from '@whiskeysockets/baileys';
 import { Boom } from '@hapi/boom';
 import { Subject } from 'rxjs';
 
 @Injectable()
 export class WhatsAppSessionFactory {
-  // Método para inicializar a sessão e retornar o socket
-  async initialize(sessionId: string, qrCodeSubject: Subject<string>): Promise<WASocket> {
+  private sockets = new Map<string, WASocket>();
+
+  async initialize(sessionId: string, qrCodeSubject?: Subject<string>): Promise<void> {
     const { state, saveCreds } = await useMultiFileAuthState(`tokens/${sessionId}`);
 
     // Cria o socket
@@ -16,40 +17,45 @@ export class WhatsAppSessionFactory {
       qrTimeout: 20000,
     });
 
-    // Salvando credenciais ao serem atualizadas
-    socket.ev.on('creds.update', () => {
-      saveCreds();
-    });
-
-    // Monitorando os eventos de conexão
-    socket.ev.on('connection.update', async (update) => {
-      const { connection, lastDisconnect, qr } = update;
-
-      // Tratando a desconexão
-      if (connection === 'close') {
-        const disconnectError = lastDisconnect?.error as Boom;
+    const handleDesconnectionCallback = (update: Partial<ConnectionState>) => {
+      if (update.connection === 'close') {
+        console.log("update.connection === 'close'");
+        // Tratando a desconexão
+        const disconnectError = update.lastDisconnect?.error as Boom;
         const statusCode = disconnectError?.output?.statusCode;
-        console.log(`Conexão encerrada com erro: ${disconnectError.message}`);
-
         const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
-        console.log(`Erro: ${statusCode}, reconectando: ${shouldReconnect}`);
-
+        this.sockets.delete(sessionId);
         if (shouldReconnect) {
-          await this.initialize(sessionId, qrCodeSubject);
+          this.initialize(sessionId);
         }
       }
+    }
 
+    const handleConnectionCallback = (update: Partial<ConnectionState>) => {
       // Quando a conexão é estabelecida
-      if (connection === 'open') {
-        console.log('Conexão estabelecida com sucesso.');
+      if (update.connection === 'open') {
+        console.log("update.connection === 'open'");
+        this.sockets.set(sessionId, socket);
+        if (qrCodeSubject) {
+          qrCodeSubject.next('Sessão iniciada com sucesso');
+        }
       }
+    }
 
-      // Emite o QR code para o fluxo
-      if (qr) {
-        qrCodeSubject.next(qr); // Emite o QR code para o Subject
+    const handleQrCodeGenerationCallback = (update: Partial<ConnectionState>) => {
+      if (update.qr) {
+        if (qrCodeSubject) {
+          qrCodeSubject.next(update.qr);
+        }
       }
-    });
+    }
 
-    return socket;
+    // Salvando credenciais ao serem atualizadas
+    socket.ev.on('creds.update', () => saveCreds());
+    socket.ev.on('connection.update', (update) => handleDesconnectionCallback(update));
+    socket.ev.on('connection.update', (update) => handleConnectionCallback(update));
+    if (qrCodeSubject) {
+      socket.ev.on('connection.update', (update) => handleQrCodeGenerationCallback(update));
+    }
   }
 }
