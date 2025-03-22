@@ -3,6 +3,7 @@ import { Boom } from '@hapi/boom';
 import { MultiFileAuthStateService } from './multi-file-auth-state.service';
 import { Subject } from 'rxjs';
 import { Logger } from '@nestjs/common';
+
 export class WhatsAppSession {
   private socket: WASocket | null = null;
   private sessionOpened = false;
@@ -29,15 +30,14 @@ export class WhatsAppSession {
     });
 
     this.socket.ev.on('creds.update', saveCreds);
-    this.socket.ev.on('connection.update', (update) => this.handleConnectionUpdate(update));
+    this.socket.ev.on('connection.update', async (update) => await this.handleConnectionUpdate(update));
   }
 
-  private handleConnectionUpdate(update: Partial<ConnectionState>) {
+  private async handleConnectionUpdate(update: Partial<ConnectionState>) {
     if (update.qr) this.onQRCodeReceived(update.qr);
     if (update.connection === 'open') this.onSessionOpened();
-    if (update.connection === 'close') this.onSessionClosed(update);
+    if (update.connection === 'close') await this.onSessionClosed(update);
   }
-
 
   private onQRCodeReceived(qr: string) {
     Logger.log(`QR Code atualizado para sessão ${this.sessionId}`);
@@ -51,14 +51,20 @@ export class WhatsAppSession {
     this.emitEvent('connected');
   }
 
-  private onSessionClosed(update: Partial<ConnectionState>) {
-    const restartRequired = (update.lastDisconnect?.error as Boom)?.output?.statusCode === DisconnectReason.restartRequired;
+  private async onSessionClosed(update: Partial<ConnectionState>) {
+    Logger.debug((update.lastDisconnect?.error as Boom)?.output);
+    const restartRequired =
+      (update.lastDisconnect?.error as Boom)?.output?.statusCode === DisconnectReason.restartRequired;
 
     if (restartRequired) {
       Logger.log(`Sessão ${this.sessionId} caiu inesperadamente.`);
       this.emitEvent('unexpected_disconnection');
-
-      this.reconectarSessao();
+      await this.reconectarSessao();
+    } else {
+      Logger.log(`Sessão ${this.sessionId} foi desconectada.`);
+      this.emitEvent('logged_out');
+      // Remove credenciais e chaves
+      await this.authService.deleteAuthState(this.sessionId);
     }
   }
 
@@ -75,9 +81,7 @@ export class WhatsAppSession {
     });
 
     this.socket.ev.on('creds.update', saveCreds);
-    this.socket.ev.on('connection.update', (update) => {
-      if (update.connection === 'open') this.onSessionOpened();
-    });
+    this.socket.ev.on('connection.update', async (update) => await this.handleConnectionUpdate(update));
   }
 
   async desconectar() {
