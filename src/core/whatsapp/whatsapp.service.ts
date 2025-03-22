@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { MultiFileAuthStateService } from './multi-file-auth-state.service';
-import { WhatsAppSession } from './WhatsAppSession';
+import { AuthStateService } from './submodules/auth-state/auth-state.service';
+import { WhatsAppSession } from './entities/whatsapp-session.entity';
 import { Subject } from 'rxjs';
 
 @Injectable()
@@ -8,7 +8,7 @@ export class WhatsAppService {
   private sessions: Map<string, WhatsAppSession> = new Map();
   private globalEvents = new Subject<{ sessionId: string; type: string; data?: any }>();
 
-  constructor(private readonly authService: MultiFileAuthStateService) { }
+  constructor(private readonly authStateService: AuthStateService) { }
 
   /**
    * Obtém ou cria uma nova sessão do WhatsApp.
@@ -20,7 +20,7 @@ export class WhatsAppService {
     }
 
     console.log(`Iniciando sessão ${sessionId}...`);
-    const session = new WhatsAppSession(sessionId, this.authService);
+    const session = new WhatsAppSession(sessionId, this.authStateService);
     this.sessions.set(sessionId, session);
 
     // Assina os eventos da sessão e repassa para o fluxo global
