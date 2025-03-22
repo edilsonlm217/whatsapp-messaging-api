@@ -1,34 +1,61 @@
 import { Injectable } from '@nestjs/common';
-import { WhatsAppSessionFactory } from './whatsapp-session.factory';
-import { WASocket } from '@whiskeysockets/baileys';
+import { MultiFileAuthStateService } from './multi-file-auth-state.service';
+import { WhatsAppSession } from './WhatsAppSession';
 import { Subject } from 'rxjs';
 
 @Injectable()
 export class WhatsAppService {
-  private sockets = new Map<string, WASocket>();
-  private qrCodeSubjects = new Map<string, Subject<string>>();
+  private sessions: Map<string, WhatsAppSession> = new Map();
+  private globalEvents = new Subject<{ sessionId: string; type: string; data?: any }>();
 
-  constructor(private readonly sessionFactory: WhatsAppSessionFactory) { }
+  constructor(private readonly authService: MultiFileAuthStateService) { }
 
-  // Método para iniciar ou reiniciar a sessão com controle de estado
+  /**
+   * Obtém ou cria uma nova sessão do WhatsApp.
+   */
   async startSession(sessionId: string) {
-    // Se a sessão já existe e está ativa, não inicializamos de novo
-    if (this.sockets.has(sessionId)) {
-      throw new Error(`Sessão ${sessionId} já está ativa.`);
+    if (this.sessions.has(sessionId)) {
+      console.log(`Sessão ${sessionId} já está em execução.`);
+      return;
     }
 
-    // Se a sessão não existe ou precisa ser reiniciada, inicializa a sessão
-    console.log(`Inicializando a sessão ${sessionId}...`);
+    console.log(`Iniciando sessão ${sessionId}...`);
+    const session = new WhatsAppSession(sessionId, this.authService);
+    this.sessions.set(sessionId, session);
 
-    // Cria o Subject para o QR Code da sessão
-    const qrCodeSubject = new Subject<string>();
-    this.qrCodeSubjects.set(sessionId, qrCodeSubject);
+    // Assina os eventos da sessão e repassa para o fluxo global
+    session.sessionEvents$.subscribe(({ type, data }) => {
+      this.globalEvents.next({ sessionId, type, data });
+    });
 
-    // Inicializa a sessão usando a fábrica e passando o Subject de QR code
-    const socket = await this.sessionFactory.initialize(sessionId, qrCodeSubject);
-    this.sockets.set(sessionId, socket);
+    await session.iniciarSessao();
+  }
 
-    // Retorna o Observable com o fluxo de QR codes
-    return qrCodeSubject.asObservable();
+  /**
+   * Encerra uma sessão específica.
+   */
+  async stopSession(sessionId: string) {
+    const session = this.sessions.get(sessionId);
+    if (session) {
+      await session.desconectar();
+      this.sessions.delete(sessionId);
+      console.log(`Sessão ${sessionId} removida.`);
+    } else {
+      console.log(`Sessão ${sessionId} não encontrada.`);
+    }
+  }
+
+  /**
+   * Obtém o fluxo de eventos globais de todas as sessões.
+   */
+  get events$() {
+    return this.globalEvents.asObservable();
+  }
+
+  /**
+   * Obtém uma instância da sessão específica.
+   */
+  getSession(sessionId: string): WhatsAppSession | undefined {
+    return this.sessions.get(sessionId);
   }
 }
