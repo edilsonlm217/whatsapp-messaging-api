@@ -1,77 +1,28 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Db, Collection } from 'mongodb';
-import { Inject } from '@nestjs/common';
-import {
-  AuthenticationState,
-  initAuthCreds,
-  AuthenticationCreds,
-  SignalDataTypeMap,
-  proto,
-  BufferJSON,
-} from '@whiskeysockets/baileys';
+import { Injectable } from '@nestjs/common';
+import { CredsRepository } from '../../database/repositories/creds.repository';
+import { KeysRepository } from '../../database/repositories/keys.repository';
+import { AuthenticationState, initAuthCreds } from '@whiskeysockets/baileys';
 
-// O serviço será agora dependente da conexão global com o MongoDB
 @Injectable()
 export class MultiFileAuthStateService {
-  private credsCollection: Collection;
-  private keysCollection: Collection;
+  constructor(
+    private readonly credsRepository: CredsRepository,
+    private readonly keysRepository: KeysRepository,
+  ) { }
 
-  constructor(@Inject('DATABASE_CONNECTION') private readonly db: Db) {
-    // Inicializamos as coleções
-    this.credsCollection = this.db.collection('creds');
-    this.keysCollection = this.db.collection('keys');
-  }
-
-  // Função para escrever dados no MongoDB
-  private async writeData(collection: Collection, data: any, file: string) {
-    try {
-      await collection.updateOne(
-        { file },
-        { $set: { data: JSON.stringify(data, BufferJSON.replacer) } },
-        { upsert: true }
-      );
-    } catch (error) {
-      console.error(`Error writing to MongoDB for file ${file}: ${error.message}`);
-    }
-  }
-
-  // Função para ler dados do MongoDB
-  private async readData(collection: Collection, file: string) {
-    try {
-      const result = await collection.findOne({ file });
-      return result ? JSON.parse(result.data, BufferJSON.reviver) : null;
-    } catch (error) {
-      console.error(`Error reading from MongoDB for file ${file}: ${error.message}`);
-      return null;
-    }
-  }
-
-  // Função para remover dados do MongoDB
-  private async removeData(collection: Collection, file: string) {
-    try {
-      await collection.deleteOne({ file });
-    } catch (error) {
-      console.error(`Error removing from MongoDB for file ${file}: ${error.message}`);
-    }
-  }
-
-  // Função principal para obter o estado de autenticação
-  public async getAuthState(): Promise<{ state: AuthenticationState; saveCreds: () => Promise<void> }> {
-    // Buscando as credenciais no MongoDB ou inicializando se não existirem
-    const creds: AuthenticationCreds = (await this.readData(this.credsCollection, 'creds.json')) || initAuthCreds();
+  // Função principal para obter o estado de autenticação para uma sessão
+  public async getAuthState(sessionId: string): Promise<{ state: AuthenticationState; saveCreds: () => Promise<void> }> {
+    const creds = (await this.credsRepository.readCreds(`${sessionId}-creds.json`)) || initAuthCreds();
 
     return {
       state: {
         creds,
         keys: {
           get: async (type, ids) => {
-            const data: { [_: string]: SignalDataTypeMap[typeof type] } = {};
+            const data: { [_: string]: any } = {};
             await Promise.all(
               ids.map(async (id) => {
-                let value = await this.readData(this.keysCollection, `${type}-${id}.json`);
-                if (type === 'app-state-sync-key' && value) {
-                  value = proto.Message.AppStateSyncKeyData.fromObject(value);
-                }
+                let value = await this.keysRepository.readKey(`${sessionId}-${type}-${id}.json`);
                 data[id] = value;
               })
             );
@@ -82,8 +33,8 @@ export class MultiFileAuthStateService {
             for (const category in data) {
               for (const id in data[category]) {
                 const value = data[category][id];
-                const file = `${category}-${id}.json`;
-                tasks.push(value ? this.writeData(this.keysCollection, value, file) : this.removeData(this.keysCollection, file));
+                const file = `${sessionId}-${category}-${id}.json`;
+                tasks.push(value ? this.keysRepository.writeKey(value, file) : this.keysRepository.removeKey(file));
               }
             }
             await Promise.all(tasks);
@@ -91,8 +42,20 @@ export class MultiFileAuthStateService {
         }
       },
       saveCreds: async () => {
-        return this.writeData(this.credsCollection, creds, 'creds.json');
+        return this.credsRepository.writeCreds(creds, `${sessionId}-creds.json`);
       }
     };
   }
+
+  public async deleteAuthState(sessionId: string): Promise<void> {
+    // Remove as credenciais
+    await this.credsRepository.removeCreds(`${sessionId}-creds.json`);
+
+    // Remove todas as chaves associadas à sessão
+    const files = await this.keysRepository.listKeys(sessionId); // Agora pega todos os arquivos que começam com o sessionId
+    await Promise.all(files.map(file => this.keysRepository.removeKey(file)));
+
+    console.log(`Credenciais e chaves da sessão ${sessionId} removidas.`);
+  }
+
 }
