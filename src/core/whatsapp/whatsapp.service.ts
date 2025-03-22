@@ -26,6 +26,12 @@ export class WhatsAppService {
     // Assina os eventos da sessão e repassa para o fluxo global
     session.sessionEvents$.subscribe(({ type, data }) => {
       this.globalEvents.next({ sessionId, type, data });
+
+      // Se o evento for "logged_out", remove a sessão do Map
+      if (type === 'logged_out') {
+        this.sessions.delete(sessionId);
+        console.log(`Sessão ${sessionId} removida após logout.`);
+      }
     });
 
     await session.iniciarSessao();
