@@ -5,11 +5,13 @@ import { AuthStateService } from './auth-state/auth-state.service';
 
 export class WhatsAppSession {
   private socket: WASocket | null = null;
-  private sessionOpened = false;
   private isReconnecting = false;
   private sessionEvents = new Subject<{ type: string; data?: any }>();
   // Adicionamos esta lista para controlar os eventos aos quais estamos assinando
   private subscribedEvents: (keyof BaileysEventMap)[] = [];
+
+  // Armazena as meta informações
+  private metaInfo: { [key: string]: any } = {};
 
   constructor(private sessionId: string, private authService: AuthStateService) { }
 
@@ -17,9 +19,18 @@ export class WhatsAppSession {
     return this.sessionEvents.asObservable();
   }
 
+  // Método para adicionar ou atualizar meta informação
+  setMetaInfo(key: string, value: any) {
+    this.metaInfo[key] = value;
+  }
+
+  // Método para acessar meta informação
+  getMetaInfo(key: string) {
+    return this.metaInfo[key];
+  }
+
   async iniciarSessao() {
     this.emitEvent('starting');
-    this.sessionOpened = false;
     this.isReconnecting = false;
 
     await this.setupSocket();
@@ -43,11 +54,21 @@ export class WhatsAppSession {
 
     this.socket.ev.on('creds.update', async () => {
       await this.authService.saveCreds(this.sessionId, state.creds);
+
+      // Armazena as informações nas meta informações
+      const authState = this.socket?.authState;
+      this.setMetaInfo('phone', authState?.creds?.me?.id);
+      this.setMetaInfo('phonePlatform', authState?.creds?.platform);
+
+      this.emitEvent('creds.update', this.metaInfo);
     });
 
     this.socket.ev.on('connection.update', async (update) => {
+      this.setMetaInfo('connectionState', update);
+      this.emitEvent('connection.update', this.metaInfo);
+
       if (update.qr) this.onQRCodeReceived(update.qr);
-      if (update.connection === 'open') this.onSessionOpened();
+      if (update.connection === 'open') await this.onSessionOpened();
       if (update.connection === 'close') await this.onSessionClosed(update);
     });
 
@@ -59,8 +80,7 @@ export class WhatsAppSession {
     this.emitEvent('qr_code', qr);
   }
 
-  private onSessionOpened() {
-    this.sessionOpened = true;
+  private async onSessionOpened() {
     this.isReconnecting = false;
     this.emitEvent('connected');
   }
