@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AuthStateService } from './submodules/auth-state/auth-state.service';
+import { AuthStateService } from './auth-state/auth-state.service';
 import { WhatsAppSession } from './whatsapp-session';
 import { Subject } from 'rxjs';
 

@@ -1,7 +1,7 @@
 import { WASocket, makeWASocket, DisconnectReason, ConnectionState } from '@whiskeysockets/baileys';
 import { Subject } from 'rxjs';
 import { Boom } from '@hapi/boom';
-import { AuthStateService } from './submodules/auth-state/auth-state.service';
+import { AuthStateService } from './auth-state/auth-state.service';
 
 export class WhatsAppSession {
   private socket: WASocket | null = null;
