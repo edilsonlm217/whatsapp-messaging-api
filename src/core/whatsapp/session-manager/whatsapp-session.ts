@@ -7,6 +7,7 @@ export class WhatsAppSession {
   private socket: WASocket | null = null;
   private isReconnecting = false;
   private sessionEvents = new Subject<{ type: string; data?: any }>();
+  private baileysEvents = new Subject<{ type: string; data?: any }>();
   // Adicionamos esta lista para controlar os eventos aos quais estamos assinando
   private subscribedEvents: (keyof BaileysEventMap)[] = [];
 
@@ -17,6 +18,10 @@ export class WhatsAppSession {
 
   get sessionEvents$() {
     return this.sessionEvents.asObservable();
+  }
+
+  get baileysEvents$() {
+    return this.baileysEvents.asObservable();
   }
 
   // Método para adicionar ou atualizar meta informação
@@ -60,12 +65,12 @@ export class WhatsAppSession {
       this.setMetaInfo('phone', authState?.creds?.me?.id);
       this.setMetaInfo('phonePlatform', authState?.creds?.platform);
 
-      this.emitEvent('creds.update', this.metaInfo);
+      this.baileysEvents.next({ type: 'creds.update', data: this.metaInfo });
     });
 
     this.socket.ev.on('connection.update', async (update) => {
       this.setMetaInfo('connectionState', update);
-      this.emitEvent('connection.update', this.metaInfo);
+      this.baileysEvents.next({ type: 'connection.update', data: this.metaInfo });
 
       if (update.qr) this.onQRCodeReceived(update.qr);
       if (update.connection === 'open') await this.onSessionOpened();
@@ -82,7 +87,7 @@ export class WhatsAppSession {
 
   private async onSessionOpened() {
     this.isReconnecting = false;
-    this.emitEvent('connected');
+    this.emitEvent('connected', this.metaInfo);
   }
 
   private async onSessionClosed(update: Partial<ConnectionState>) {
