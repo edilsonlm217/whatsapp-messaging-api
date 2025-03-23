@@ -93,32 +93,31 @@ export class WhatsAppSession {
       await this.reconectarSessao();
     } else {
       // Chama desconectar para garantir que a sessão seja completamente encerrada
-      await this.desconectar();
+      await this.limparSessao();
     }
   }
 
   async desconectar() {
-    if (this.socket) {
+    if (this.socket) { await this.socket.logout() }
+  }
 
-      // Verifica se o WebSocket não está fechado
-      if (!this.socket.ws.isClosed) {
-        await this.socket.logout();
-      }
+  private async limparSessao() {
+    // Emite o evento 'logged_out' aqui, já que é a função responsável por desconectar
+    this.emitEvent('logged_out');
 
-      this.socket = null;
+    // Completa o subject de eventos
+    Promise.resolve().then(async () => {
+      this.sessionEvents.complete(); // Completa o subject
+      // Deleta as credenciais associadas à sessão
+      await this.authService.deleteAuthState(this.sessionId);
 
-      // Emite o evento 'logged_out' aqui, já que é a função responsável por desconectar
-      this.emitEvent('logged_out');
-
-      // Removemos os listeners registrados
+      // Remove os listeners registrados
       this.subscribedEvents.forEach((event) => {
         this.socket?.ev.removeAllListeners(event);  // Remove listener específico
       });
 
-      Promise.resolve().then(() => {
-        this.sessionEvents.complete(); // Completa o subject
-      });
-    }
+      this.socket = null;
+    });
   }
 
   private emitEvent(type: string, data?: any) {
