@@ -79,7 +79,12 @@ export class WhatsAppSession {
   async desconectar() {
     if (this.socket) {
       await this.socket.logout();
-      this.emitEvent('logged_out');
+      this.socket = null;
+      this.emitEvent('logged_out'); // Emite o evento de logout antes de finalizar o Subject
+      // Aguarda a próxima microtask para garantir que os assinantes recebam o evento antes de completar o Subject
+      Promise.resolve().then(() => {
+        this.sessionEvents.complete();
+      });
     }
   }
 
