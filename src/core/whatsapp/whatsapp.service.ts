@@ -40,6 +40,19 @@ export class WhatsAppService {
   }
 
   /**
+   * Obtém uma sessão existente, se disponível.
+   */
+  getSession(sessionId: string) {
+    const session = this.sessionManager.getSession(sessionId);
+
+    if (!session) {
+      console.log(`Sessão ${sessionId} não encontrada.`);
+    }
+
+    return session;
+  }
+
+  /**
    * Obtém o fluxo de eventos globais de todas as sessões.
    */
   get events$() {
