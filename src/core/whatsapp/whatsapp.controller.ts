@@ -1,4 +1,4 @@
-import { Controller, Param, Sse } from '@nestjs/common';
+import { Controller, Delete, Param, Sse } from '@nestjs/common';
 import { WhatsAppService } from './whatsapp.service';
 
 @Controller('whatsapp')
@@ -37,6 +37,16 @@ export class WhatsAppController {
       return session.baileysEvents$;
     } catch (error) {
       throw new Error(`Erro ao buscar eventos para a sessão ${sessionId}: ${error.message}`);
+    }
+  }
+
+  @Delete('sessions/:sessionId')
+  async stopSession(@Param('sessionId') sessionId: string) {
+    try {
+      await this.whatsappService.stopSession(sessionId);
+      return { message: `Sessão ${sessionId} foi encerrada com sucesso.` };
+    } catch (error) {
+      throw new Error(`Erro ao tentar encerrar a sessão ${sessionId}: ${error.message}`);
     }
   }
 }
