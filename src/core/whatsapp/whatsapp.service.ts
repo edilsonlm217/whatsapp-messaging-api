@@ -16,13 +16,15 @@ export class WhatsAppService {
   async startSession(sessionId: string) {
     if (this.isSessionActive(sessionId)) {
       console.log(`Sessão ${sessionId} já está em execução.`);
-      return;
+      return this.sessions.get(sessionId)!.sessionEvents$; // Retorna o Observable diretamente
     }
 
     console.log(`Iniciando nova sessão ${sessionId}...`);
     const session = this.createSession(sessionId);
 
     await session.iniciarSessao();
+
+    return session.sessionEvents$; // Retorna o Observable dos eventos da sessão
   }
 
   /**
