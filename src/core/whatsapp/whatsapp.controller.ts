@@ -27,7 +27,7 @@ export class WhatsAppController {
     @Param('sessionId') sessionId: string
   ) {
     try {
-      const session = await this.whatsappService.getSession(sessionId);
+      const session = this.whatsappService.getSession(sessionId);
 
       if (!session) {
         throw new Error(`Sessão ${sessionId} não encontrada.`);
