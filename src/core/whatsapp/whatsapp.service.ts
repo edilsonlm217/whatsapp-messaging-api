@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SessionManager } from './session.manager.service';
+import { SessionManager } from './session-manager/session.manager.service';
 import { Subject } from 'rxjs';
 
 @Injectable()
