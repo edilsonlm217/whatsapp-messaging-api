@@ -1,4 +1,4 @@
-import { WASocket, makeWASocket, DisconnectReason, ConnectionState } from '@whiskeysockets/baileys';
+import { WASocket, makeWASocket, DisconnectReason, ConnectionState, BaileysEventMap } from '@whiskeysockets/baileys';
 import { Subject } from 'rxjs';
 import { Boom } from '@hapi/boom';
 import { AuthStateService } from './auth-state/auth-state.service';
@@ -7,8 +7,9 @@ export class WhatsAppSession {
   private socket: WASocket | null = null;
   private sessionOpened = false;
   private isReconnecting = false;
-
   private sessionEvents = new Subject<{ type: string; data?: any }>();
+  // Adicionamos esta lista para controlar os eventos aos quais estamos assinando
+  private subscribedEvents: (keyof BaileysEventMap)[] = [];
 
   constructor(private sessionId: string, private authService: AuthStateService) { }
 
@@ -49,6 +50,9 @@ export class WhatsAppSession {
       if (update.connection === 'open') this.onSessionOpened();
       if (update.connection === 'close') await this.onSessionClosed(update);
     });
+
+    // Aqui, inscrevemos os eventos que que assinamos
+    this.subscribedEvents.push('connection.update', 'creds.update');
   }
 
   private onQRCodeReceived(qr: string) {
@@ -63,27 +67,38 @@ export class WhatsAppSession {
 
   private async onSessionClosed(update: Partial<ConnectionState>) {
     const error = update.lastDisconnect?.error as Boom;
-    const statusCode = error?.output?.statusCode
+    const statusCode = error?.output?.statusCode;
     const restartRequired = statusCode === DisconnectReason.restartRequired;
 
     if (restartRequired) {
       this.emitEvent('unexpected_disconnection');
       await this.reconectarSessao();
     } else {
-      this.emitEvent('logged_out');
-      // Remove credenciais e chaves
-      await this.authService.deleteAuthState(this.sessionId);
+      // Chama desconectar para garantir que a sessão seja completamente encerrada
+      await this.desconectar();
     }
   }
 
   async desconectar() {
     if (this.socket) {
-      await this.socket.logout();
+
+      // Verifica se o WebSocket não está fechado
+      if (!this.socket.ws.isClosed) {
+        await this.socket.logout();
+      }
+
       this.socket = null;
-      this.emitEvent('logged_out'); // Emite o evento de logout antes de finalizar o Subject
-      // Aguarda a próxima microtask para garantir que os assinantes recebam o evento antes de completar o Subject
+
+      // Emite o evento 'logged_out' aqui, já que é a função responsável por desconectar
+      this.emitEvent('logged_out');
+
+      // Removemos os listeners registrados
+      this.subscribedEvents.forEach((event) => {
+        this.socket?.ev.removeAllListeners(event);  // Remove listener específico
+      });
+
       Promise.resolve().then(() => {
-        this.sessionEvents.complete();
+        this.sessionEvents.complete(); // Completa o subject
       });
     }
   }

@@ -21,13 +21,15 @@ export class WhatsAppService {
 
     const session = this.sessionManager.createSession(sessionId);
 
-    session.sessionEvents$.subscribe(({ type, data }) => {
+    const subscription = session.sessionEvents$.subscribe(({ type, data }) => {
       this.globalEvents.next({ sessionId, type, data });
+      // Remove a assinatura para evitar vazamento de memória
+      if (type === 'logged_out') { subscription.unsubscribe() }
     });
 
     await session.iniciarSessao();
 
-    return session.sessionEvents$;
+    return session;
   }
 
   /**

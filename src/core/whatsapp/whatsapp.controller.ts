@@ -10,13 +10,13 @@ export class WhatsAppController {
     @Param('sessionId') sessionId: string
   ) {
     try {
-      const sessionEvents$ = await this.whatsappService.startSession(sessionId);
+      const session = await this.whatsappService.startSession(sessionId);
 
-      if (!sessionEvents$) {
+      if (!session) {
         throw new Error(`Sessão ${sessionId} não encontrada.`);
       }
 
-      return sessionEvents$; // Retorna diretamente o Observable
+      return session.sessionEvents$; // Retorna diretamente o Observable
     } catch (error) {
       throw new Error(`Erro ao iniciar a sessão ${sessionId}: ${error.message}`);
     }
