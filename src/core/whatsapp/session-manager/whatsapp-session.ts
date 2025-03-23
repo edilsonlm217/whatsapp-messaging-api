@@ -23,16 +23,6 @@ export class WhatsAppSession {
     return this.baileysEvents.asObservable();
   }
 
-  // Método para adicionar ou atualizar meta informação
-  setMetaInfo(key: string, value: any) {
-    this.metaInfo[key] = value;
-  }
-
-  // Método para acessar meta informação
-  getMetaInfo(key: string) {
-    return this.metaInfo[key];
-  }
-
   async iniciarSessao() {
     this.emitEvent('starting');
     await this.setupSocket();
@@ -73,6 +63,16 @@ export class WhatsAppSession {
 
     // Aqui, inscrevemos os eventos que que assinamos
     this.subscribedEvents.push('connection.update', 'creds.update');
+  }
+
+  // Método para adicionar ou atualizar meta informação
+  setMetaInfo(key: string, value: any) {
+    this.metaInfo[key] = value;
+  }
+
+  // Método para acessar meta informação
+  getMetaInfo(key: string) {
+    return this.metaInfo[key];
   }
 
   private onQRCodeReceived(qr: string) {
