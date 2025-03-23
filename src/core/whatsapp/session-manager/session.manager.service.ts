@@ -14,6 +14,9 @@ export class SessionManager {
   createSession(sessionId: string): WhatsAppSession {
     const session = new WhatsAppSession(sessionId, this.authStateService);
     this.sessions.set(sessionId, session);
+    session.sessionEvents$.subscribe(({ type }) => {
+      if (type === 'logged_out') { this.sessions.delete(sessionId) }
+    });
     return session;
   }
 

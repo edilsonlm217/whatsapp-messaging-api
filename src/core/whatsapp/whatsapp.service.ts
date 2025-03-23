@@ -19,15 +19,9 @@ export class WhatsAppService {
       return;
     }
 
-    console.log(`Iniciando nova sessão ${sessionId}...`);
     const session = this.sessionManager.createSession(sessionId);
-    
-    session.sessionEvents$.subscribe(({ type, data }) => {
-      if (type === 'logged_out') {
-        this.sessionManager.stopSession(sessionId);
-        console.log(`Sessão ${sessionId} removida após logout.`);
-      }
 
+    session.sessionEvents$.subscribe(({ type, data }) => {
       this.globalEvents.next({ sessionId, type, data });
     });
 
