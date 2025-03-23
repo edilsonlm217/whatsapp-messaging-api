@@ -46,7 +46,6 @@ export class SessionManager {
     const session = this.sessions.get(sessionId);
     if (session) {
       await session.desconectar();
-      this.sessions.delete(sessionId);
       console.log(`Sessão ${sessionId} removida.`);
     } else {
       console.log(`Sessão ${sessionId} não encontrada.`);
