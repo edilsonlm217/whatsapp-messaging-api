@@ -14,28 +14,48 @@ export class WhatsAppService {
    * Obtém ou cria uma nova sessão do WhatsApp.
    */
   async startSession(sessionId: string) {
-    if (this.sessions.has(sessionId)) {
+    if (this.isSessionActive(sessionId)) {
       console.log(`Sessão ${sessionId} já está em execução.`);
       return;
     }
 
-    console.log(`Iniciando sessão ${sessionId}...`);
+    console.log(`Iniciando nova sessão ${sessionId}...`);
+    const session = this.createSession(sessionId);
+
+    await session.iniciarSessao();
+  }
+
+  /**
+ * Verifica se a sessão já está ativa.
+ */
+  private isSessionActive(sessionId: string): boolean {
+    return this.sessions.has(sessionId);
+  }
+
+  /**
+   * Cria e armazena uma nova sessão do WhatsApp.
+   */
+  private createSession(sessionId: string): WhatsAppSession {
     const session = new WhatsAppSession(sessionId, this.authStateService);
     this.sessions.set(sessionId, session);
 
-    // Assina os eventos da sessão
+    this.subscribeToSessionEvents(sessionId, session);
+
+    return session;
+  }
+
+  /**
+   * Assina eventos da sessão e gerencia o fluxo global de eventos.
+   */
+  private subscribeToSessionEvents(sessionId: string, session: WhatsAppSession) {
     session.sessionEvents$.subscribe(({ type, data }) => {
-      // Se o evento for "logged_out", remove a sessão do Map
       if (type === 'logged_out') {
         this.sessions.delete(sessionId);
         console.log(`Sessão ${sessionId} removida após logout.`);
       }
 
-      // Repassa para o fluxo global
       this.globalEvents.next({ sessionId, type, data });
     });
-
-    await session.iniciarSessao();
   }
 
   /**
