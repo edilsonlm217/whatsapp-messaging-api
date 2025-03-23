@@ -5,7 +5,6 @@ import { AuthStateService } from './auth-state/auth-state.service';
 
 export class WhatsAppSession {
   private socket: WASocket | null = null;
-  private isReconnecting = false;
   private sessionEvents = new Subject<{ type: string; data?: any }>();
   private baileysEvents = new Subject<{ type: string; data?: any }>();
   // Adicionamos esta lista para controlar os eventos aos quais estamos assinando
@@ -36,15 +35,10 @@ export class WhatsAppSession {
 
   async iniciarSessao() {
     this.emitEvent('starting');
-    this.isReconnecting = false;
-
     await this.setupSocket();
   }
 
   async reconectarSessao() {
-    if (this.isReconnecting) return;
-    this.isReconnecting = true;
-
     this.emitEvent('reconnecting');
     await this.setupSocket();
   }
@@ -86,7 +80,6 @@ export class WhatsAppSession {
   }
 
   private async onSessionOpened() {
-    this.isReconnecting = false;
     this.emitEvent('connected', this.metaInfo);
   }
 
