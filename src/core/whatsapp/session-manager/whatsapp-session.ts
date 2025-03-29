@@ -1,11 +1,11 @@
 import { WASocket, makeWASocket, DisconnectReason, ConnectionState, BaileysEventMap } from '@whiskeysockets/baileys';
-import { Subject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { Boom } from '@hapi/boom';
 import { AuthStateService } from './auth-state/auth-state.service';
 
 export class WhatsAppSession {
   private socket: WASocket | null = null;
-  private sessionEvents = new Subject<{ type: string; data?: any }>();
+  private sessionEvents = new BehaviorSubject<{ type: string; data?: any } | null>(null);
   private baileysEvents = new Subject<{ type: string; data?: any }>();
   // Adicionamos esta lista para controlar os eventos aos quais estamos assinando
   private subscribedEvents: (keyof BaileysEventMap)[] = [];

@@ -15,16 +15,19 @@ export class WhatsAppService {
    */
   async startSession(sessionId: string) {
     if (this.sessionManager.isSessionActive(sessionId)) {
-      console.log(`Sessão ${sessionId} já está em execução.`);
-      return;
+      const session = this.getSession(sessionId);
+      return session;
     }
 
     const session = this.sessionManager.createSession(sessionId);
 
-    const subscription = session.sessionEvents$.subscribe(({ type, data }) => {
-      this.globalEvents.next({ sessionId, type, data });
-      // Remove a assinatura para evitar vazamento de memória
-      if (type === 'logged_out') { subscription.unsubscribe() }
+    const subscription = session.sessionEvents$.subscribe((event) => {
+      if (event) {
+        const { type, data } = event;
+        this.globalEvents.next({ sessionId, type, data });
+        // Remove a assinatura para evitar vazamento de memória
+        if (type === 'logged_out') { subscription.unsubscribe() }
+      }
     });
 
     await session.iniciarSessao();

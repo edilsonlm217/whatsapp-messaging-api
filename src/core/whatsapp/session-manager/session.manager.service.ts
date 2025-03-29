@@ -15,8 +15,8 @@ export class SessionManager {
     const session = new WhatsAppSession(sessionId, this.authStateService);
     this.sessions.set(sessionId, session);
 
-    const subscription = session.sessionEvents$.subscribe(({ type }) => {
-      if (type === 'logged_out') {
+    const subscription = session.sessionEvents$.subscribe((event) => {
+      if (event && event.type === 'logged_out') {
         this.sessions.delete(sessionId);
         subscription.unsubscribe(); // Remove a assinatura para evitar vazamento de memória
       }
