@@ -24,12 +24,19 @@ export class WhatsAppSession {
   }
 
   async iniciarSessao() {
-    this.emitEvent('starting');
     await this.setupSocket();
   }
 
   async reconectarSessao() {
-    this.emitEvent('reconnecting');
+    this.emitEvent('connection_update', {
+      session: {
+        phone: this.metaInfo.phone,
+        phonePlatform: this.metaInfo.phonePlatform,
+        connection: {
+          status: "reconnecting"
+        }
+      }
+    });
     await this.setupSocket();
   }
 
@@ -49,14 +56,14 @@ export class WhatsAppSession {
       this.setMetaInfo('phone', authState?.creds?.me?.id);
       this.setMetaInfo('phonePlatform', authState?.creds?.platform);
 
-      this.baileysEvents.next({ type: 'creds.update', data: this.metaInfo });
+      this.baileysEvents.next({ type: 'creds.update', data: authState });
     });
 
     this.socket.ev.on('connection.update', async (update) => {
       this.setMetaInfo('connectionState', update);
-      this.baileysEvents.next({ type: 'connection.update', data: this.metaInfo });
+      this.baileysEvents.next({ type: 'connection.update', data: update });
 
-      if (update.qr) this.onQRCodeReceived(update.qr);
+      if (update.qr) this.onQRCodeReceived(update);
       if (update.connection === 'open') await this.onSessionOpened();
       if (update.connection === 'close') await this.onSessionClosed(update);
     });
@@ -75,12 +82,27 @@ export class WhatsAppSession {
     return this.metaInfo[key];
   }
 
-  private onQRCodeReceived(qr: string) {
-    this.emitEvent('qr_code', qr);
+  private onQRCodeReceived(update: Partial<ConnectionState>) {
+    this.emitEvent('connection_update', {
+      session: {
+        connection: {
+          status: "qr_code"
+        },
+        qr: update.qr
+      }
+    });
   }
 
   private async onSessionOpened() {
-    this.emitEvent('connected', this.metaInfo);
+    this.emitEvent('connection_update', {
+      session: {
+        phone: this.metaInfo.phone,
+        phonePlatform: this.metaInfo.phonePlatform,
+        connection: {
+          status: "connected"
+        }
+      }
+    });
   }
 
   private async onSessionClosed(update: Partial<ConnectionState>) {
@@ -89,9 +111,30 @@ export class WhatsAppSession {
     const restartRequired = statusCode === DisconnectReason.restartRequired;
 
     if (restartRequired) {
-      this.emitEvent('unexpected_disconnection');
+      this.emitEvent('connection_update', {
+        session: {
+          phone: this.metaInfo.phone,
+          phonePlatform: this.metaInfo.phonePlatform,
+          connection: {
+            status: "disconnected",
+            reason: "unexpected disconnection"
+          }
+        }
+      });
       await this.reconectarSessao();
     } else {
+      // Emite o evento 'logged_out' aqui, já que é a função responsável por desconectar
+      this.emitEvent('connection_update', {
+        session: {
+          phone: this.metaInfo.phone,
+          phonePlatform: this.metaInfo.phonePlatform,
+          connection: {
+            status: "disconnected",
+            reason: "logout"
+          }
+        }
+      });
+
       // Chama desconectar para garantir que a sessão seja completamente encerrada
       await this.limparSessao();
     }
@@ -102,9 +145,6 @@ export class WhatsAppSession {
   }
 
   private async limparSessao() {
-    // Emite o evento 'logged_out' aqui, já que é a função responsável por desconectar
-    this.emitEvent('logged_out');
-
     // Completa o subject de eventos
     Promise.resolve().then(async () => {
       this.sessionEvents.complete(); // Completa o subject
