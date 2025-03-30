@@ -2,10 +2,13 @@ import { WASocket, makeWASocket, DisconnectReason, ConnectionState, BaileysEvent
 import { BehaviorSubject, Subject } from 'rxjs';
 import { Boom } from '@hapi/boom';
 import { AuthStateService } from './auth-state/auth-state.service';
+import { SessionEvent } from 'src/common/interfaces/session-event.interface';
+import { SessionData } from 'src/common/interfaces/session.data.interface';
+import { ConnectionStatusEnum, DisconnectionReasonEnum } from 'src/common/interfaces/connection.status.interface';
 
 export class WhatsAppSession {
   private socket: WASocket | null = null;
-  private sessionEvents = new BehaviorSubject<{ type: string; data?: any } | null>(null);
+  private sessionEvents = new BehaviorSubject<SessionEvent | null>(null);
   private baileysEvents = new Subject<{ type: string; data?: any }>();
   // Adicionamos esta lista para controlar os eventos aos quais estamos assinando
   private subscribedEvents: (keyof BaileysEventMap)[] = [];
@@ -33,7 +36,7 @@ export class WhatsAppSession {
         phone: this.metaInfo.phone,
         phonePlatform: this.metaInfo.phonePlatform,
         connection: {
-          status: "reconnecting"
+          status: ConnectionStatusEnum.RECONNECTING
         }
       }
     });
@@ -86,7 +89,7 @@ export class WhatsAppSession {
     this.emitEvent('connection_update', {
       session: {
         connection: {
-          status: "qr_code"
+          status: ConnectionStatusEnum.QR_CODE
         },
         qr: update.qr
       }
@@ -99,7 +102,7 @@ export class WhatsAppSession {
         phone: this.metaInfo.phone,
         phonePlatform: this.metaInfo.phonePlatform,
         connection: {
-          status: "connected"
+          status: ConnectionStatusEnum.CONNECTED
         }
       }
     });
@@ -116,8 +119,8 @@ export class WhatsAppSession {
           phone: this.metaInfo.phone,
           phonePlatform: this.metaInfo.phonePlatform,
           connection: {
-            status: "disconnected",
-            reason: "unexpected disconnection"
+            status: ConnectionStatusEnum.DISCONNECTED,
+            reason: DisconnectionReasonEnum.UNEXPECTED
           }
         }
       });
@@ -129,8 +132,8 @@ export class WhatsAppSession {
           phone: this.metaInfo.phone,
           phonePlatform: this.metaInfo.phonePlatform,
           connection: {
-            status: "disconnected",
-            reason: "logout"
+            status: ConnectionStatusEnum.DISCONNECTED,
+            reason: DisconnectionReasonEnum.LOGOUT
           }
         }
       });
@@ -160,7 +163,7 @@ export class WhatsAppSession {
     });
   }
 
-  private emitEvent(type: string, data?: any) {
-    this.sessionEvents.next({ type, data });
+  private emitEvent(type: string, sessionData: SessionData) {
+    this.sessionEvents.next({ type, data: sessionData });
   }
 }

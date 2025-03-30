@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { SessionManager } from './session-manager/session.manager.service';
 import { Subject } from 'rxjs';
+import { ConnectionStatusEnum, DisconnectionReasonEnum } from 'src/common/interfaces/connection.status.interface';
 
 @Injectable()
 export class WhatsAppService {
@@ -25,8 +26,15 @@ export class WhatsAppService {
       if (event) {
         const { type, data } = event;
         this.globalEvents.next({ sessionId, type, data });
+
+        const { status, reason } = event.data.session.connection
         // Remove a assinatura para evitar vazamento de memória
-        if (type === 'logged_out') { subscription.unsubscribe() }
+        if (
+          status === ConnectionStatusEnum.DISCONNECTED &&
+          reason === DisconnectionReasonEnum.LOGOUT
+        ) {
+          subscription.unsubscribe();
+        }
       }
     });
 
