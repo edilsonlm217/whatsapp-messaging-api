@@ -25,7 +25,7 @@ export class WhatsAppService {
   /**
    * Encerra uma sessão específica através do SessionManager.
    */
-  async stopSession(sessionId: string) {
-    await this.sessionManager.stopSession(sessionId); // Chama o stopSession do SessionManager
+  async logout(sessionId: string) {
+    await this.sessionManager.logout(sessionId); // Chama o stopSession do SessionManager
   }
 }

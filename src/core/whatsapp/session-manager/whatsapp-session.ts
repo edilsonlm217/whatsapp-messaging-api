@@ -138,7 +138,7 @@ export class WhatsAppSession {
     }
   }
 
-  async desconectar() {
+  async logout() {
     if (this.socket) { await this.socket.logout() }
   }
 

@@ -50,10 +50,10 @@ export class SessionManager {
   /**
    * Encerra uma sessão específica.
    */
-  async stopSession(sessionId: string) {
+  async logout(sessionId: string) {
     const session = this.getSession(sessionId);
     if (session) {
-      await session.desconectar();
+      await session.logout();
       console.log(`Sessão ${sessionId} removida.`);
     } else {
       console.log(`Sessão ${sessionId} não encontrada.`);

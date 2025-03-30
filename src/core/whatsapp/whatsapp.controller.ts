@@ -21,9 +21,9 @@ export class WhatsAppController {
   }
 
   @Delete('sessions/:sessionId')
-  async stopSession(@Param('sessionId') sessionId: string) {
+  async logout(@Param('sessionId') sessionId: string) {
     try {
-      await this.whatsappService.stopSession(sessionId);
+      await this.whatsappService.logout(sessionId);
       return { message: `Sessão ${sessionId} foi encerrada com sucesso.` };
     } catch (error) {
       throw new Error(`Erro ao tentar encerrar a sessão ${sessionId}: ${error.message}`);
