@@ -21,11 +21,11 @@ export class WhatsAppSession {
     return this.sessionEvents.asObservable();
   }
 
-  async iniciarSessao() {
+  public async iniciarSessao() {
     await this.setupSocket();
   }
 
-  async reconectarSessao() {
+  public async reconectarSessao() {
     this.emitEvent('connection_update', {
       session: {
         phone: this.deviceInfo.phone,
@@ -36,6 +36,10 @@ export class WhatsAppSession {
       }
     });
     await this.setupSocket();
+  }
+
+  public async logout() {
+    if (this.socket) { await this.socket.logout() }
   }
 
   private async setupSocket() {
@@ -63,11 +67,6 @@ export class WhatsAppSession {
 
     // Aqui, inscrevemos os eventos que que assinamos
     this.subscribedEvents.push('connection.update', 'creds.update');
-  }
-
-  // Método para adicionar ou atualizar informações do dispositivo
-  setDeviceInfo(key: string, value: any) {
-    this.deviceInfo[key] = value;
   }
 
   private onQRCodeReceived(update: Partial<ConnectionState>) {
@@ -128,10 +127,6 @@ export class WhatsAppSession {
     }
   }
 
-  async logout() {
-    if (this.socket) { await this.socket.logout() }
-  }
-
   private async limparSessao() {
     // Completa o subject de eventos
     Promise.resolve().then(async () => {
@@ -150,5 +145,10 @@ export class WhatsAppSession {
 
   private emitEvent(type: string, sessionData: SessionData) {
     this.sessionEvents.next({ type, data: sessionData });
+  }
+
+  // Método para adicionar ou atualizar informações do dispositivo
+  private setDeviceInfo(key: string, value: any) {
+    this.deviceInfo[key] = value;
   }
 }
