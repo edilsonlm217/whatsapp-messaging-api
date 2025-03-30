@@ -13,8 +13,8 @@ export class WhatsAppSession {
   // Adicionamos esta lista para controlar os eventos aos quais estamos assinando
   private subscribedEvents: (keyof BaileysEventMap)[] = [];
 
-  // Armazena as meta informações
-  private metaInfo: { [key: string]: any } = {};
+  // Armazena as informações do dispositivo
+  private deviceInfo: { phone?: string; phonePlatform?: string } = {};
 
   constructor(private sessionId: string, private authService: AuthStateService) { }
 
@@ -33,8 +33,8 @@ export class WhatsAppSession {
   async reconectarSessao() {
     this.emitEvent('connection_update', {
       session: {
-        phone: this.metaInfo.phone,
-        phonePlatform: this.metaInfo.phonePlatform,
+        phone: this.deviceInfo.phone,
+        phonePlatform: this.deviceInfo.phonePlatform,
         connection: {
           status: ConnectionStatusEnum.RECONNECTING
         }
@@ -56,14 +56,13 @@ export class WhatsAppSession {
 
       // Armazena as informações nas meta informações
       const authState = this.socket?.authState;
-      this.setMetaInfo('phone', authState?.creds?.me?.id);
-      this.setMetaInfo('phonePlatform', authState?.creds?.platform);
+      this.setDeviceInfo('phone', authState?.creds?.me?.id);
+      this.setDeviceInfo('phonePlatform', authState?.creds?.platform);
 
       this.baileysEvents.next({ type: 'creds.update', data: authState });
     });
 
     this.socket.ev.on('connection.update', async (update) => {
-      this.setMetaInfo('connectionState', update);
       this.baileysEvents.next({ type: 'connection.update', data: update });
 
       if (update.qr) this.onQRCodeReceived(update);
@@ -75,14 +74,9 @@ export class WhatsAppSession {
     this.subscribedEvents.push('connection.update', 'creds.update');
   }
 
-  // Método para adicionar ou atualizar meta informação
-  setMetaInfo(key: string, value: any) {
-    this.metaInfo[key] = value;
-  }
-
-  // Método para acessar meta informação
-  getMetaInfo(key: string) {
-    return this.metaInfo[key];
+  // Método para adicionar ou atualizar informações do dispositivo
+  setDeviceInfo(key: string, value: any) {
+    this.deviceInfo[key] = value;
   }
 
   private onQRCodeReceived(update: Partial<ConnectionState>) {
@@ -99,8 +93,8 @@ export class WhatsAppSession {
   private async onSessionOpened() {
     this.emitEvent('connection_update', {
       session: {
-        phone: this.metaInfo.phone,
-        phonePlatform: this.metaInfo.phonePlatform,
+        phone: this.deviceInfo.phone,
+        phonePlatform: this.deviceInfo.phonePlatform,
         connection: {
           status: ConnectionStatusEnum.CONNECTED
         }
@@ -116,8 +110,8 @@ export class WhatsAppSession {
     if (restartRequired) {
       this.emitEvent('connection_update', {
         session: {
-          phone: this.metaInfo.phone,
-          phonePlatform: this.metaInfo.phonePlatform,
+          phone: this.deviceInfo.phone,
+          phonePlatform: this.deviceInfo.phonePlatform,
           connection: {
             status: ConnectionStatusEnum.DISCONNECTED,
             reason: DisconnectionReasonEnum.UNEXPECTED
@@ -129,8 +123,8 @@ export class WhatsAppSession {
       // Emite o evento 'logged_out' aqui, já que é a função responsável por desconectar
       this.emitEvent('connection_update', {
         session: {
-          phone: this.metaInfo.phone,
-          phonePlatform: this.metaInfo.phonePlatform,
+          phone: this.deviceInfo.phone,
+          phonePlatform: this.deviceInfo.phonePlatform,
           connection: {
             status: ConnectionStatusEnum.DISCONNECTED,
             reason: DisconnectionReasonEnum.LOGOUT
