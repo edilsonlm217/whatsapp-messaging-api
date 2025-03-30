@@ -1,4 +1,4 @@
-import { WASocket, makeWASocket, DisconnectReason, ConnectionState, BaileysEventMap } from '@whiskeysockets/baileys';
+import { WASocket, makeWASocket, DisconnectReason, ConnectionState, BaileysEventMap, AuthenticationState } from '@whiskeysockets/baileys';
 import { BehaviorSubject } from 'rxjs';
 import { Boom } from '@hapi/boom';
 import { AuthStateService } from './auth-state/auth-state.service';
@@ -44,29 +44,31 @@ export class WhatsAppSession {
 
   private async setupSocket() {
     const state = await this.authService.getAuthState(this.sessionId);
+
     this.socket = makeWASocket({
       printQRInTerminal: true,
       auth: state,
       qrTimeout: 20000,
     });
 
-    this.socket.ev.on('creds.update', async () => {
-      await this.authService.saveCreds(this.sessionId, state.creds);
-
-      // Armazena as informações nas meta informações
-      const authState = this.socket?.authState;
-      this.setDeviceInfo('phone', authState?.creds?.me?.id);
-      this.setDeviceInfo('phonePlatform', authState?.creds?.platform);
-    });
-
-    this.socket.ev.on('connection.update', async (update) => {
-      if (update.qr) this.onQRCodeReceived(update);
-      if (update.connection === 'open') await this.onSessionOpened();
-      if (update.connection === 'close') await this.onSessionClosed(update);
-    });
+    this.socket.ev.on('creds.update', async () => { await this.handleCredsUpdate(state) });
+    this.socket.ev.on('connection.update', async (update) => { await this.handleConnectionUpdate(update) });
 
     // Aqui, inscrevemos os eventos que que assinamos
     this.subscribedEvents.push('connection.update', 'creds.update');
+  }
+
+  private async handleCredsUpdate(state: AuthenticationState) {
+    await this.authService.saveCreds(this.sessionId, state.creds);
+    const authState = this.socket?.authState;
+    this.setDeviceInfo('phone', authState?.creds?.me?.id);
+    this.setDeviceInfo('phonePlatform', authState?.creds?.platform);
+  }
+
+  private async handleConnectionUpdate(update: Partial<ConnectionState>) {
+    if (update.qr) this.onQRCodeReceived(update);
+    if (update.connection === 'open') await this.onSessionOpened();
+    if (update.connection === 'close') await this.onSessionClosed(update);
   }
 
   private onQRCodeReceived(update: Partial<ConnectionState>) {
