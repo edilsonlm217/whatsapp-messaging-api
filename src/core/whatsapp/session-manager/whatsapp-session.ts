@@ -5,6 +5,7 @@ import { AuthStateService } from './auth-state/auth-state.service';
 import { SessionEvent } from 'src/common/interfaces/session-event.interface';
 import { SessionData } from 'src/common/interfaces/session.data.interface';
 import { ConnectionStatusEnum, DisconnectionReasonEnum } from 'src/common/interfaces/connection.status.interface';
+import { DeviceInfo } from 'src/common/interfaces/device-info.interface';
 
 export class WhatsAppSession {
   private socket: WASocket | null = null;
@@ -14,7 +15,7 @@ export class WhatsAppSession {
   private subscribedEvents: (keyof BaileysEventMap)[] = [];
 
   // Armazena as informações do dispositivo
-  private deviceInfo: { phone?: string; phonePlatform?: string } = {};
+  private deviceInfo: DeviceInfo = {};
 
   constructor(private sessionId: string, private authService: AuthStateService) { }
 
