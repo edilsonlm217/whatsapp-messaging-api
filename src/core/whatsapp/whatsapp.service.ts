@@ -1,11 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { SessionManager } from './session-manager/session.manager.service';
-import { Subject } from 'rxjs';
-import { ConnectionStatusEnum, DisconnectionReasonEnum } from 'src/common/interfaces/connection.status.interface';
 
 @Injectable()
 export class WhatsAppService {
-  private globalEvents = new Subject<{ sessionId: string; type: string; data?: any }>();
 
   constructor(
     private readonly sessionManager: SessionManager,
@@ -14,32 +11,14 @@ export class WhatsAppService {
   /**
    * Obtém ou cria uma nova sessão do WhatsApp.
    */
-  async startSession(sessionId: string) {
+  async listenToSessionEvents(sessionId: string) {
     if (this.sessionManager.isSessionActive(sessionId)) {
-      const session = this.getSession(sessionId);
+      const session = this.sessionManager.getSession(sessionId);
       return session;
     }
 
     const session = this.sessionManager.createSession(sessionId);
-
-    const subscription = session.sessionEvents$.subscribe((event) => {
-      if (event) {
-        const { type, data } = event;
-        this.globalEvents.next({ sessionId, type, data });
-
-        const { status, reason } = event.data.session.connection
-        // Remove a assinatura para evitar vazamento de memória
-        if (
-          status === ConnectionStatusEnum.DISCONNECTED &&
-          reason === DisconnectionReasonEnum.LOGOUT
-        ) {
-          subscription.unsubscribe();
-        }
-      }
-    });
-
     await session.iniciarSessao();
-
     return session;
   }
 
@@ -48,25 +27,5 @@ export class WhatsAppService {
    */
   async stopSession(sessionId: string) {
     await this.sessionManager.stopSession(sessionId); // Chama o stopSession do SessionManager
-  }
-
-  /**
-   * Obtém uma sessão existente, se disponível.
-   */
-  getSession(sessionId: string) {
-    const session = this.sessionManager.getSession(sessionId);
-
-    if (!session) {
-      console.log(`Sessão ${sessionId} não encontrada.`);
-    }
-
-    return session;
-  }
-
-  /**
-   * Obtém o fluxo de eventos globais de todas as sessões.
-   */
-  get events$() {
-    return this.globalEvents.asObservable();
   }
 }
