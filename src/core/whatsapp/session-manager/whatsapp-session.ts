@@ -10,7 +10,7 @@ import { DeviceInfo } from 'src/common/interfaces/device-info.interface';
 export class WhatsAppSession {
   private socket: WASocket | null = null;
   private sessionEvents = new BehaviorSubject<SessionEvent | null>(null);
-  private baileysEvents = new Subject<{ type: string; data?: any }>();
+
   // Adicionamos esta lista para controlar os eventos aos quais estamos assinando
   private subscribedEvents: (keyof BaileysEventMap)[] = [];
 
@@ -21,10 +21,6 @@ export class WhatsAppSession {
 
   get sessionEvents$() {
     return this.sessionEvents.asObservable();
-  }
-
-  get baileysEvents$() {
-    return this.baileysEvents.asObservable();
   }
 
   async iniciarSessao() {
@@ -59,13 +55,9 @@ export class WhatsAppSession {
       const authState = this.socket?.authState;
       this.setDeviceInfo('phone', authState?.creds?.me?.id);
       this.setDeviceInfo('phonePlatform', authState?.creds?.platform);
-
-      this.baileysEvents.next({ type: 'creds.update', data: authState });
     });
 
     this.socket.ev.on('connection.update', async (update) => {
-      this.baileysEvents.next({ type: 'connection.update', data: update });
-
       if (update.qr) this.onQRCodeReceived(update);
       if (update.connection === 'open') await this.onSessionOpened();
       if (update.connection === 'close') await this.onSessionClosed(update);
