@@ -1,5 +1,5 @@
 import { WASocket, makeWASocket, DisconnectReason, ConnectionState, BaileysEventMap } from '@whiskeysockets/baileys';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { Boom } from '@hapi/boom';
 import { AuthStateService } from './auth-state/auth-state.service';
 import { SessionEvent } from 'src/common/interfaces/session-event.interface';
@@ -9,13 +9,11 @@ import { DeviceInfo } from 'src/common/interfaces/device-info.interface';
 
 export class WhatsAppSession {
   private socket: WASocket | null = null;
+  private deviceInfo: DeviceInfo = {};
   private sessionEvents = new BehaviorSubject<SessionEvent | null>(null);
 
   // Adicionamos esta lista para controlar os eventos aos quais estamos assinando
   private subscribedEvents: (keyof BaileysEventMap)[] = [];
-
-  // Armazena as informações do dispositivo
-  private deviceInfo: DeviceInfo = {};
 
   constructor(private sessionId: string, private authService: AuthStateService) { }
 
