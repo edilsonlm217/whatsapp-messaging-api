@@ -45,11 +45,7 @@ export class WhatsAppSession {
   private async setupSocket() {
     const state = await this.authService.getAuthState(this.sessionId);
 
-    this.socket = makeWASocket({
-      printQRInTerminal: true,
-      auth: state,
-      qrTimeout: 20000,
-    });
+    this.socket = makeWASocket({ printQRInTerminal: true, auth: state, qrTimeout: 20000 });
 
     this.socket.ev.on('creds.update', async () => { await this.handleCredsUpdate(state) });
     this.socket.ev.on('connection.update', async (update) => { await this.handleConnectionUpdate(update) });

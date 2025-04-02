@@ -3,29 +3,27 @@ import { SessionManager } from './session-manager/session.manager.service';
 
 @Injectable()
 export class WhatsAppService {
-
-  constructor(
-    private readonly sessionManager: SessionManager,
-  ) { }
+  constructor(private readonly sessionManager: SessionManager) { }
 
   /**
    * Obtém ou cria uma nova sessão do WhatsApp.
    */
-  async listenToSessionEvents(sessionId: string) {
-    if (this.sessionManager.isSessionActive(sessionId)) {
-      const session = this.sessionManager.getSession(sessionId);
-      return session;
-    }
-
-    const session = this.sessionManager.createSession(sessionId);
-    await session.iniciarSessao();
-    return session;
+  async createSession(sessionId: string) {
+    return this.sessionManager.createSession(sessionId)
   }
 
   /**
    * Encerra uma sessão específica através do SessionManager.
    */
   async logout(sessionId: string) {
-    await this.sessionManager.logout(sessionId); // Chama o stopSession do SessionManager
+    return this.sessionManager.logout(sessionId);
+  }
+
+  /**
+   * Obtém uma sessão existente e escuta seus eventos.
+   * Se a sessão não existir, retorna `undefined`.
+   */
+  async getSessionEventStream(sessionId: string) {
+    return this.sessionManager.getSessionEventStream(sessionId);
   }
 }

@@ -1,62 +1,84 @@
-import { Injectable } from '@nestjs/common';
-import { WhatsAppSession } from './whatsapp-session';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import { Subscription } from 'rxjs';
 import { AuthStateService } from './auth-state/auth-state.service';
+import { SessionRepository } from './session.repository';
+import { WhatsAppSession } from './whatsapp-session';
 import { ConnectionStatusEnum, DisconnectionReasonEnum } from 'src/common/interfaces/connection.status.interface';
 
 @Injectable()
-export class SessionManager {
-  private sessions: Map<string, WhatsAppSession> = new Map();
+export class SessionManager implements OnModuleInit, OnModuleDestroy {
+  private sessionStateSubscription: Subscription;
 
-  constructor(private readonly authStateService: AuthStateService) { }
+  constructor(
+    private readonly authStateService: AuthStateService,
+    private readonly sessionRepository: SessionRepository
+  ) { }
+
+  onModuleInit() {
+    // Assina mudanças no estado das sessões
+    const eventStream = this.sessionRepository.getSessionStateChanges$();
+    this.sessionStateSubscription = eventStream.subscribe(({ sessionId, action }) => {
+      if (action === 'created') { this.observeSession(sessionId) }
+    });
+  }
+
+  onModuleDestroy() {
+    // Garante que a assinatura seja removida ao destruir o módulo
+    this.sessionStateSubscription.unsubscribe();
+  }
 
   /**
    * Cria e armazena uma nova sessão do WhatsApp.
    */
-  createSession(sessionId: string): WhatsAppSession {
+  async createSession(sessionId: string): Promise<WhatsAppSession> {
+    const sessionExists = this.sessionRepository.find(sessionId);
+    if (sessionExists) { throw new Error('Sessão já existe') }
     const session = new WhatsAppSession(sessionId, this.authStateService);
-    this.sessions.set(sessionId, session);
-
-    const subscription = session.sessionEvents$.subscribe((event) => {
-      if (event) {
-        const { status, reason } = event.data.session.connection
-
-        if (
-          status === ConnectionStatusEnum.DISCONNECTED &&
-          reason === DisconnectionReasonEnum.LOGOUT
-        ) {
-          this.sessions.delete(sessionId);
-          subscription.unsubscribe(); // Remove a assinatura para evitar vazamento de memória
-        }
-      }
-    });
-
+    this.sessionRepository.save(sessionId, session);
+    await session.iniciarSessao()
     return session;
-  }
-
-  /**
-   * Obtém uma instância da sessão específica.
-   */
-  getSession(sessionId: string): WhatsAppSession | undefined {
-    return this.sessions.get(sessionId);
-  }
-
-  /**
-   * Verifica se a sessão já está ativa.
-   */
-  isSessionActive(sessionId: string): boolean {
-    return this.sessions.has(sessionId);
   }
 
   /**
    * Encerra uma sessão específica.
    */
-  async logout(sessionId: string) {
+  async logout(sessionId: string): Promise<void> {
+    const session = this.sessionRepository.find(sessionId);
+    if (!session) { throw new Error('Sessão não existe') }
+    await session.logout();
+    console.log(`Sessão ${sessionId} removida.`);
+  }
+
+  /**
+   * Obtém uma instância da sessão específica.
+   */
+  getSession(sessionId: string) {
+    return this.sessionRepository.find(sessionId);
+  }
+
+  /**
+   * Obtém uma sessão existente e escuta seus eventos.
+   * Se a sessão não existir, retorna `undefined`.
+   */
+  async getSessionEventStream(sessionId: string) {
     const session = this.getSession(sessionId);
-    if (session) {
-      await session.logout();
-      console.log(`Sessão ${sessionId} removida.`);
-    } else {
-      console.log(`Sessão ${sessionId} não encontrada.`);
-    }
+    if (!session) { throw new Error('Sessão não existe') }
+    return session.sessionEvents$;
+  }
+
+  /**
+   * Observa eventos de uma sessão específica.
+   */
+  private observeSession(sessionId: string): void {
+    const session = this.sessionRepository.find(sessionId);
+    if (!session) { throw new Error('Sessão não existe') }
+    const subscription = session.sessionEvents$.subscribe((event) => {
+      if (!event) { return }
+      const { status, reason } = event.data.session.connection;
+      if (status === ConnectionStatusEnum.DISCONNECTED && reason === DisconnectionReasonEnum.LOGOUT) {
+        this.sessionRepository.delete(sessionId);
+        subscription.unsubscribe(); // Remove a assinatura para evitar vazamento de memória
+      }
+    });
   }
 }
