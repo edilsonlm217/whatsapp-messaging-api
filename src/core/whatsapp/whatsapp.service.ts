@@ -1,22 +1,22 @@
 import { Injectable } from '@nestjs/common';
-import { SessionManager } from './session-manager/session.manager.service';
+import { SessionService } from './session/session.service';
 
 @Injectable()
 export class WhatsAppService {
-  constructor(private readonly sessionManager: SessionManager) { }
+  constructor(private readonly sessionService: SessionService) { }
 
   /**
    * Obtém ou cria uma nova sessão do WhatsApp.
    */
   async createSession(sessionId: string) {
-    return this.sessionManager.createSession(sessionId)
+    return this.sessionService.createSession(sessionId)
   }
 
   /**
    * Encerra uma sessão específica através do SessionManager.
    */
   async logout(sessionId: string) {
-    return this.sessionManager.logout(sessionId);
+    return this.sessionService.logout(sessionId);
   }
 
   /**
@@ -24,6 +24,6 @@ export class WhatsAppService {
    * Se a sessão não existir, retorna `undefined`.
    */
   async getSessionEventStream(sessionId: string) {
-    return this.sessionManager.getSessionEventStream(sessionId);
+    return this.sessionService.getSessionEventStream(sessionId);
   }
 }

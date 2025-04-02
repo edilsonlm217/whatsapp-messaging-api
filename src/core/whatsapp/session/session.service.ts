@@ -6,7 +6,7 @@ import { WhatsAppSession } from './whatsapp-session';
 import { ConnectionStatusEnum, DisconnectionReasonEnum } from 'src/common/interfaces/connection.status.interface';
 
 @Injectable()
-export class SessionManager implements OnModuleInit, OnModuleDestroy {
+export class SessionService implements OnModuleInit, OnModuleDestroy {
   private sessionStateSubscription: Subscription;
 
   constructor(

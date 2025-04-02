@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { WhatsAppController } from './whatsapp.controller';
 import { WhatsAppService } from './whatsapp.service';
-import { SessionManagerModule } from './session-manager/session.manager.module';
+import { SessionModule } from './session/session.module';
 
 @Module({
-  imports: [SessionManagerModule],
+  imports: [SessionModule],
   controllers: [WhatsAppController],
   providers: [WhatsAppService],
   exports: [WhatsAppService]
