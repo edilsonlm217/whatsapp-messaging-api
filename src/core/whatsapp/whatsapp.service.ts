@@ -15,8 +15,8 @@ export class WhatsAppService {
   /**
    * Encerra uma sessão específica através do SessionManager.
    */
-  async logout(sessionId: string) {
-    return this.sessionService.logout(sessionId);
+  async logoutSession(sessionId: string) {
+    return this.sessionService.logoutSession(sessionId);
   }
 
   /**

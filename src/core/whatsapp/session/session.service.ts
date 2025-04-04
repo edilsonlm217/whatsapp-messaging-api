@@ -22,14 +22,10 @@ export class SessionService {
     return session;
   }
 
-  async deleteSession(sessionId: string) {
-    return this.sessionStateService.delete(sessionId);
-  }
-
   /**
    * Encerra uma sessão específica.
    */
-  async logout(sessionId: string): Promise<void> {
+  async logoutSession(sessionId: string): Promise<void> {
     const session = this.sessionStateService.find(sessionId);
     if (!session) { throw new Error('Sessão não existe') }
     await session.logout();
@@ -37,18 +33,11 @@ export class SessionService {
   }
 
   /**
-   * Obtém uma instância da sessão específica.
-   */
-  getSession(sessionId: string) {
-    return this.sessionStateService.find(sessionId);
-  }
-
-  /**
    * Obtém uma sessão existente e escuta seus eventos.
    * Se a sessão não existir, retorna `undefined`.
    */
   async getSessionEventStream(sessionId: string) {
-    const session = this.getSession(sessionId);
+    const session = this.sessionStateService.find(sessionId);
     if (!session) { throw new Error('Sessão não existe') }
     return session.sessionEvents$;
   }
