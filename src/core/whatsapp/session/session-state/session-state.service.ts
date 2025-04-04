@@ -1,14 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { WhatsAppSession } from './whatsapp-session';
+import { WhatsAppSession } from '../whatsapp-session';
 import { Subject } from 'rxjs';
 
-interface SessionStateChange {
+export interface SessionStateChange {
   sessionId: string;
   action: 'created' | 'deleted';
 }
 
 @Injectable()
-export class SessionRepository {
+export class SessionStateService {
   private sessions: Map<string, WhatsAppSession> = new Map();
   private sessionStateChanges$: Subject<SessionStateChange> = new Subject();
 
