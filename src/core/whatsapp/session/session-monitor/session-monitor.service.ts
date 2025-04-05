@@ -1,22 +1,34 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { Subject, Subscription } from 'rxjs';
-import { ConnectionStatusEnum, DisconnectionReasonEnum } from 'src/common/interfaces/connection.status.interface';
+import { DisconnectionReasonEnum } from 'src/common/interfaces/connection.status.interface';
 import { SessionStateService } from '../session-state/session-state.service';
-import { SessionEvent } from 'src/common/interfaces/session-event.interface';
-
-interface SessionMonitorEvent {
-  type: DisconnectionReasonEnum;
-  sessionId: string;
-}
+import { AuthenticationCreds } from '@whiskeysockets/baileys';
+import { UnexpectedDisconnectionEvent } from 'src/common/interfaces/unexpected-disconnection-event.interface';
+import { LogoutDisconnectionEvent } from 'src/common/interfaces/logout-disconnection-event.interface';
+import { CredsUpdateEvent } from 'src/common/interfaces/creds-update-event.interface';
 
 @Injectable()
 export class SessionMonitorService implements OnModuleInit, OnModuleDestroy {
   private sessionStateSubscription: Subscription;
-  private sessionMonitorEvents$ = new Subject<SessionMonitorEvent>();
+  private sessionSubscriptions = new Map<string, Subscription[]>();
 
-  constructor(
-    private readonly sessionStateService: SessionStateService,
-  ) { }
+  private unexpectedDisconnection$ = new Subject<UnexpectedDisconnectionEvent>();
+  private logoutDisconnection$ = new Subject<LogoutDisconnectionEvent>();
+  private credsUpdate$ = new Subject<CredsUpdateEvent>();
+
+  constructor(private readonly sessionStateService: SessionStateService) { }
+
+  getUnexpectedDisconnection$() {
+    return this.unexpectedDisconnection$.asObservable();
+  }
+
+  getLogoutDisconnection$() {
+    return this.logoutDisconnection$.asObservable();
+  }
+
+  getCredsUpdate$() {
+    return this.credsUpdate$.asObservable();
+  }
 
   onModuleInit() {
     this.subscribeToSessionStateChanges();
@@ -24,10 +36,10 @@ export class SessionMonitorService implements OnModuleInit, OnModuleDestroy {
 
   onModuleDestroy(): void {
     this.sessionStateSubscription?.unsubscribe();
-  }
 
-  getSessionMonitorEvents$() {
-    return this.sessionMonitorEvents$.asObservable();
+    // limpa todos os subscriptions ativos
+    this.sessionSubscriptions.forEach((subs) => subs.forEach((sub) => sub.unsubscribe()));
+    this.sessionSubscriptions.clear();
   }
 
   private subscribeToSessionStateChanges(): void {
@@ -44,32 +56,55 @@ export class SessionMonitorService implements OnModuleInit, OnModuleDestroy {
     const session = this.sessionStateService.find(sessionId);
     if (!session) return;
 
-    const subscription = session.sessionEvents$.subscribe((event: SessionEvent) => {
-      const connection = event?.data?.session?.connection;
-      if (!connection) { return }
+    const subs: Subscription[] = [];
 
-      const { status, reason } = connection;
-      if (status !== ConnectionStatusEnum.DISCONNECTED) { return }
-      if (!reason) { return }
-      this.handleDisconnectionvent(sessionId, reason, subscription);
+    const credsSub = session.credsUpdate$.subscribe((event) => {
+      this.emitCredsUpdate(event.sessionId, event.creds);
     });
+
+    const logoutSub = session.logoutDisconnection$.subscribe((event) => {
+      this.sessionStateService.delete(sessionId);
+      this.emitLogoutDisconnection(event.sessionId);
+      this.cleanupSessionSubscriptions(sessionId);
+    });
+
+    const unexpectedSub = session.unexpectedDisconnection$.subscribe((event) => {
+      this.emitUnexpectedDisconnection(event.sessionId);
+    });
+
+    subs.push(credsSub, logoutSub, unexpectedSub);
+    this.sessionSubscriptions.set(sessionId, subs);
   }
 
-  private handleDisconnectionvent(
-    sessionId: string,
-    reason: DisconnectionReasonEnum,
-    subscription: Subscription
-  ): void {
-    if (reason === DisconnectionReasonEnum.LOGOUT) {
-      this.sessionStateService.delete(sessionId);
-      this.emitMonitorEvent(DisconnectionReasonEnum.LOGOUT, sessionId);
-      subscription.unsubscribe();
-    } else if (reason === DisconnectionReasonEnum.UNEXPECTED) {
-      this.emitMonitorEvent(DisconnectionReasonEnum.UNEXPECTED, sessionId);
+  private cleanupSessionSubscriptions(sessionId: string) {
+    const subs = this.sessionSubscriptions.get(sessionId);
+    if (subs) {
+      subs.forEach((sub) => sub.unsubscribe());
+      this.sessionSubscriptions.delete(sessionId);
     }
   }
 
-  private emitMonitorEvent(reason: DisconnectionReasonEnum, sessionId: string): void {
-    this.sessionMonitorEvents$.next({ type: reason, sessionId });
+  private emitUnexpectedDisconnection(sessionId: string) {
+    this.unexpectedDisconnection$.next({
+      sessionId,
+      reason: DisconnectionReasonEnum.UNEXPECTED,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  private emitLogoutDisconnection(sessionId: string) {
+    this.logoutDisconnection$.next({
+      sessionId,
+      reason: DisconnectionReasonEnum.LOGOUT,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  private emitCredsUpdate(sessionId: string, creds: AuthenticationCreds) {
+    this.credsUpdate$.next({
+      sessionId,
+      creds,
+      timestamp: new Date().toISOString(),
+    });
   }
 }

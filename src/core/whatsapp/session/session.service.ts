@@ -3,7 +3,7 @@ import { AuthStateService } from './auth-state/auth-state.service';
 import { WhatsAppSession } from './whatsapp-session';
 import { SessionStateService } from './session-state/session-state.service';
 import { SessionMonitorService } from './session-monitor/session-monitor.service';
-import { DisconnectionReasonEnum } from 'src/common/interfaces/connection.status.interface';
+import { AuthenticationCreds } from '@whiskeysockets/baileys';
 
 @Injectable()
 export class SessionService implements OnModuleInit {
@@ -22,10 +22,10 @@ export class SessionService implements OnModuleInit {
    */
   async createSession(sessionId: string) {
     const sessionExists = this.sessionStateService.find(sessionId);
-    if (sessionExists) { throw new Error('Sessão já existe') }
-    const state = await this.authStateService.getAuthState(sessionId);
-    const session = new WhatsAppSession(sessionId, this.authStateService);
+    if (sessionExists) throw new Error('Sessão já existe');
+    const session = new WhatsAppSession(sessionId);
     this.sessionStateService.save(sessionId, session);
+    const state = await this.authStateService.getAuthState(sessionId);
     await session.iniciarSessao(state);
     return session;
   }
@@ -35,7 +35,7 @@ export class SessionService implements OnModuleInit {
    */
   async logoutSession(sessionId: string): Promise<void> {
     const session = this.sessionStateService.find(sessionId);
-    if (!session) { throw new Error('Sessão não existe') }
+    if (!session) throw new Error('Sessão não existe');
     await session.logout();
     console.log(`Sessão ${sessionId} removida.`);
   }
@@ -46,26 +46,37 @@ export class SessionService implements OnModuleInit {
    */
   async getSessionEventStream(sessionId: string) {
     const session = this.sessionStateService.find(sessionId);
-    if (!session) { throw new Error('Sessão não existe') }
+    if (!session) throw new Error('Sessão não existe');
     return session.sessionEvents$;
   }
 
   // Escuta os eventos do SessionMonitorService
   private listenForSessionMonitorEvents() {
-    this.sessionMonitorService.getSessionMonitorEvents$().subscribe(async (event) => {
-      if (event.type === DisconnectionReasonEnum.UNEXPECTED) {
-        this.reconnectSession(event.sessionId);
-      } else if (event.type === DisconnectionReasonEnum.LOGOUT) {
-        // Deleta as credenciais associadas à sessão
-        await this.authStateService.deleteAuthState(event.sessionId);
-      }
+    this.sessionMonitorService.getUnexpectedDisconnection$().subscribe((event) => {
+      this.reconnectSession(event.sessionId);
+    });
+
+    this.sessionMonitorService.getLogoutDisconnection$().subscribe(async (event) => {
+      await this.authStateService.deleteAuthState(event.sessionId);
+    });
+
+    this.sessionMonitorService.getCredsUpdate$().subscribe(async (event) => {
+      await this.saveSessionCreds(event.sessionId, event.creds);
     });
   }
 
   private async reconnectSession(sessionId: string) {
     const session = this.sessionStateService.find(sessionId);
-    if (!session) { throw new Error('Sessão não existe') }
+    if (!session) throw new Error('Sessão não existe');
+
     const state = await this.authStateService.getAuthState(sessionId);
     session.reconectarSessao(state);
+  }
+
+  private async saveSessionCreds(sessionId: string, creds: AuthenticationCreds) {
+    const session = this.sessionStateService.find(sessionId);
+    if (!session) throw new Error('Sessão não existe');
+
+    await this.authStateService.saveCreds(sessionId, creds);
   }
 }

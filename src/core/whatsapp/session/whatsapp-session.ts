@@ -1,24 +1,44 @@
-import { WASocket, makeWASocket, DisconnectReason, ConnectionState, BaileysEventMap, AuthenticationState } from '@whiskeysockets/baileys';
-import { BehaviorSubject } from 'rxjs';
+import { WASocket, makeWASocket, DisconnectReason, ConnectionState, BaileysEventMap, AuthenticationState, AuthenticationCreds } from '@whiskeysockets/baileys';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { Boom } from '@hapi/boom';
 import { AuthStateService } from './auth-state/auth-state.service';
 import { SessionEvent } from 'src/common/interfaces/session-event.interface';
 import { SessionData } from 'src/common/interfaces/session.data.interface';
 import { ConnectionStatusEnum, DisconnectionReasonEnum } from 'src/common/interfaces/connection.status.interface';
 import { DeviceInfo } from 'src/common/interfaces/device-info.interface';
+import { UnexpectedDisconnectionEvent } from 'src/common/interfaces/unexpected-disconnection-event.interface';
+import { LogoutDisconnectionEvent } from 'src/common/interfaces/logout-disconnection-event.interface';
+import { CredsUpdateEvent } from 'src/common/interfaces/creds-update-event.interface';
 
 export class WhatsAppSession {
   private socket: WASocket | null = null;
   private deviceInfo: DeviceInfo = {};
   private sessionEvents = new BehaviorSubject<SessionEvent | null>(null);
 
+  private unexpectedDisconnection = new Subject<UnexpectedDisconnectionEvent>();
+  private logoutDisconnection = new Subject<LogoutDisconnectionEvent>();
+  private credsUpdate = new Subject<CredsUpdateEvent>();
+
   // Adicionamos esta lista para controlar os eventos aos quais estamos assinando
   private subscribedEvents: (keyof BaileysEventMap)[] = [];
 
-  constructor(private sessionId: string, private authService: AuthStateService) { }
+  constructor(private sessionId: string) { }
 
   get sessionEvents$() {
     return this.sessionEvents.asObservable();
+  }
+
+  // getters públicos
+  get unexpectedDisconnection$() {
+    return this.unexpectedDisconnection.asObservable();
+  }
+
+  get logoutDisconnection$() {
+    return this.logoutDisconnection.asObservable();
+  }
+
+  get credsUpdate$() {
+    return this.credsUpdate.asObservable();
   }
 
   public async iniciarSessao(state: AuthenticationState) {
@@ -55,10 +75,10 @@ export class WhatsAppSession {
   }
 
   private async handleCredsUpdate(state: AuthenticationState) {
-    await this.authService.saveCreds(this.sessionId, state.creds);
     const authState = this.socket?.authState;
     this.setDeviceInfo('phone', authState?.creds?.me?.id);
     this.setDeviceInfo('phonePlatform', authState?.creds?.platform);
+    this.emitCredsUpdate(this.sessionId, state.creds)
   }
 
   private async handleConnectionUpdate(update: Partial<ConnectionState>) {
@@ -109,6 +129,7 @@ export class WhatsAppSession {
         },
         timestamp: new Date().toISOString()
       });
+      this.emitUnexpectedDisconnection(this.sessionId);
     } else {
       // Emite o evento 'logged_out' aqui, já que é a função responsável por desconectar
       this.emitEvent('connection_update', {
@@ -122,6 +143,7 @@ export class WhatsAppSession {
         },
         timestamp: new Date().toISOString()
       });
+      this.emitLogoutDisconnection(this.sessionId);
 
       // Chama desconectar para garantir que a sessão seja completamente encerrada
       await this.limparSessao();
@@ -149,5 +171,30 @@ export class WhatsAppSession {
   // Método para adicionar ou atualizar informações do dispositivo
   private setDeviceInfo(key: string, value: any) {
     this.deviceInfo[key] = value;
+  }
+
+  // Emissão separada por tipo
+  private emitUnexpectedDisconnection(sessionId: string) {
+    this.unexpectedDisconnection.next({
+      sessionId,
+      reason: DisconnectionReasonEnum.UNEXPECTED,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  private emitLogoutDisconnection(sessionId: string) {
+    this.logoutDisconnection.next({
+      sessionId,
+      reason: DisconnectionReasonEnum.LOGOUT,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  private emitCredsUpdate(sessionId: string, creds: AuthenticationCreds) {
+    this.credsUpdate.next({
+      sessionId,
+      creds,
+      timestamp: new Date().toISOString(),
+    });
   }
 }
