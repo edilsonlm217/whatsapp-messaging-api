@@ -52,9 +52,12 @@ export class SessionService implements OnModuleInit {
 
   // Escuta os eventos do SessionMonitorService
   private listenForSessionMonitorEvents() {
-    this.sessionMonitorService.getSessionMonitorEvents$().subscribe(event => {
+    this.sessionMonitorService.getSessionMonitorEvents$().subscribe(async (event) => {
       if (event.type === DisconnectionReasonEnum.UNEXPECTED) {
         this.reconnectSession(event.sessionId);
+      } else if (event.type === DisconnectionReasonEnum.LOGOUT) {
+        // Deleta as credenciais associadas à sessão
+        await this.authStateService.deleteAuthState(event.sessionId);
       }
     });
   }

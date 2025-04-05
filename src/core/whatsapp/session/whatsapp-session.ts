@@ -132,8 +132,6 @@ export class WhatsAppSession {
     // Completa o subject de eventos
     Promise.resolve().then(async () => {
       this.sessionEvents.complete(); // Completa o subject
-      // Deleta as credenciais associadas à sessão
-      await this.authService.deleteAuthState(this.sessionId);
 
       // Remove os listeners registrados
       this.subscribedEvents.forEach((event) => {
