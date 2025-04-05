@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { SessionStateService } from './session-state.service';
-import { StateMonitorService } from './services/state-monitor.service';
 
 @Module({
   imports: [],
   controllers: [],
-  providers: [SessionStateService, StateMonitorService],
+  providers: [SessionStateService],
   exports: [SessionStateService]
 })
 export class SessionStateModule { }
