@@ -21,11 +21,11 @@ export class WhatsAppSession {
     return this.sessionEvents.asObservable();
   }
 
-  public async iniciarSessao() {
-    await this.setupSocket();
+  public async iniciarSessao(state: AuthenticationState) {
+    await this.setupSocket(state);
   }
 
-  public async reconectarSessao() {
+  public async reconectarSessao(state: AuthenticationState) {
     this.emitEvent('connection_update', {
       session: {
         phone: this.deviceInfo.phone,
@@ -36,15 +36,14 @@ export class WhatsAppSession {
       },
       timestamp: new Date().toISOString()
     });
-    await this.setupSocket();
+    await this.setupSocket(state);
   }
 
   public async logout() {
     if (this.socket) { await this.socket.logout() }
   }
 
-  private async setupSocket() {
-    const state = await this.authService.getAuthState(this.sessionId);
+  private async setupSocket(state: AuthenticationState) {
 
     this.socket = makeWASocket({ printQRInTerminal: true, auth: state, qrTimeout: 20000 });
 

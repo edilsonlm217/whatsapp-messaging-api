@@ -23,9 +23,10 @@ export class SessionService implements OnModuleInit {
   async createSession(sessionId: string) {
     const sessionExists = this.sessionStateService.find(sessionId);
     if (sessionExists) { throw new Error('Sessão já existe') }
+    const state = await this.authStateService.getAuthState(sessionId);
     const session = new WhatsAppSession(sessionId, this.authStateService);
     this.sessionStateService.save(sessionId, session);
-    await session.iniciarSessao()
+    await session.iniciarSessao(state);
     return session;
   }
 
@@ -61,6 +62,7 @@ export class SessionService implements OnModuleInit {
   private async reconnectSession(sessionId: string) {
     const session = this.sessionStateService.find(sessionId);
     if (!session) { throw new Error('Sessão não existe') }
-    session.reconectarSessao();
+    const state = await this.authStateService.getAuthState(sessionId);
+    session.reconectarSessao(state);
   }
 }
