@@ -6,5 +6,6 @@ export interface SessionData {
     phonePlatform?: string;
     connection: ConnectionStatus;
     qr?: string;  // Usado apenas para o status "qr_code"
-  }
+  },
+  timestamp: string; // ISO string é o ideal para consistência
 }

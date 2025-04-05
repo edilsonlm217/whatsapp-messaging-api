@@ -33,7 +33,8 @@ export class WhatsAppSession {
         connection: {
           status: ConnectionStatusEnum.RECONNECTING
         }
-      }
+      },
+      timestamp: new Date().toISOString()
     });
     await this.setupSocket();
   }
@@ -74,7 +75,8 @@ export class WhatsAppSession {
           status: ConnectionStatusEnum.QR_CODE
         },
         qr: update.qr
-      }
+      },
+      timestamp: new Date().toISOString()
     });
   }
 
@@ -86,7 +88,8 @@ export class WhatsAppSession {
         connection: {
           status: ConnectionStatusEnum.CONNECTED
         }
-      }
+      },
+      timestamp: new Date().toISOString()
     });
   }
 
@@ -104,9 +107,9 @@ export class WhatsAppSession {
             status: ConnectionStatusEnum.DISCONNECTED,
             reason: DisconnectionReasonEnum.UNEXPECTED
           }
-        }
+        },
+        timestamp: new Date().toISOString()
       });
-      await this.reconectarSessao();
     } else {
       // Emite o evento 'logged_out' aqui, já que é a função responsável por desconectar
       this.emitEvent('connection_update', {
@@ -117,7 +120,8 @@ export class WhatsAppSession {
             status: ConnectionStatusEnum.DISCONNECTED,
             reason: DisconnectionReasonEnum.LOGOUT
           }
-        }
+        },
+        timestamp: new Date().toISOString()
       });
 
       // Chama desconectar para garantir que a sessão seja completamente encerrada
