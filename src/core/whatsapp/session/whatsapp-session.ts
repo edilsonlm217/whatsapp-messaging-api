@@ -3,11 +3,12 @@ import { BehaviorSubject, Subject } from 'rxjs';
 import { Boom } from '@hapi/boom';
 import { SessionEvent } from 'src/common/interfaces/session-event.interface';
 import { SessionData } from 'src/common/interfaces/session.data.interface';
-import { ConnectionStatusEnum, DisconnectionReasonEnum } from 'src/common/interfaces/connection.status.interface';
+import { DisconnectionReasonEnum } from 'src/common/interfaces/connection.status.interface';
 import { DeviceInfo } from 'src/common/interfaces/device-info.interface';
 import { UnexpectedDisconnectionEvent } from 'src/common/interfaces/unexpected-disconnection-event.interface';
 import { LogoutDisconnectionEvent } from 'src/common/interfaces/logout-disconnection-event.interface';
 import { CredsUpdateEvent } from 'src/common/interfaces/creds-update-event.interface';
+import { EventPayloadHelper } from './event-payload.helper';
 
 export class WhatsAppSession {
   private socket: WASocket | null = null;
@@ -45,16 +46,8 @@ export class WhatsAppSession {
   }
 
   public async reconectarSessao(state: AuthenticationState) {
-    this.emitEvent('connection_update', {
-      session: {
-        phone: this.deviceInfo.phone,
-        phonePlatform: this.deviceInfo.phonePlatform,
-        connection: {
-          status: ConnectionStatusEnum.RECONNECTING
-        }
-      },
-      timestamp: new Date().toISOString()
-    });
+    const payload = EventPayloadHelper.createReconnectPayload(this.deviceInfo);
+    this.emitEvent('connection_update', payload);
     await this.setupSocket(state);
   }
 
@@ -63,7 +56,6 @@ export class WhatsAppSession {
   }
 
   private async setupSocket(state: AuthenticationState) {
-
     this.socket = makeWASocket({ printQRInTerminal: true, auth: state, qrTimeout: 20000 });
 
     this.socket.ev.on('creds.update', async () => { await this.handleCredsUpdate(state) });
@@ -87,28 +79,13 @@ export class WhatsAppSession {
   }
 
   private onQRCodeReceived(update: Partial<ConnectionState>) {
-    this.emitEvent('connection_update', {
-      session: {
-        connection: {
-          status: ConnectionStatusEnum.QR_CODE
-        },
-        qr: update.qr
-      },
-      timestamp: new Date().toISOString()
-    });
+    const payload = EventPayloadHelper.createQRCodePayload(update.qr!);
+    this.emitEvent('connection_update', payload);
   }
 
   private async onSessionOpened() {
-    this.emitEvent('connection_update', {
-      session: {
-        phone: this.deviceInfo.phone,
-        phonePlatform: this.deviceInfo.phonePlatform,
-        connection: {
-          status: ConnectionStatusEnum.CONNECTED
-        }
-      },
-      timestamp: new Date().toISOString()
-    });
+    const payload = EventPayloadHelper.createConnectedPayload(this.deviceInfo);
+    this.emitEvent('connection_update', payload);
   }
 
   private async onSessionClosed(update: Partial<ConnectionState>) {
@@ -117,31 +94,12 @@ export class WhatsAppSession {
     const restartRequired = statusCode === DisconnectReason.restartRequired;
 
     if (restartRequired) {
-      this.emitEvent('connection_update', {
-        session: {
-          phone: this.deviceInfo.phone,
-          phonePlatform: this.deviceInfo.phonePlatform,
-          connection: {
-            status: ConnectionStatusEnum.DISCONNECTED,
-            reason: DisconnectionReasonEnum.UNEXPECTED
-          }
-        },
-        timestamp: new Date().toISOString()
-      });
+      const payload = EventPayloadHelper.createUnexpectedDisconnectionPayload(this.deviceInfo);
+      this.emitEvent('connection_update', payload);
       this.emitUnexpectedDisconnection(this.sessionId);
     } else {
-      // Emite o evento 'logged_out' aqui, já que é a função responsável por desconectar
-      this.emitEvent('connection_update', {
-        session: {
-          phone: this.deviceInfo.phone,
-          phonePlatform: this.deviceInfo.phonePlatform,
-          connection: {
-            status: ConnectionStatusEnum.DISCONNECTED,
-            reason: DisconnectionReasonEnum.LOGOUT
-          }
-        },
-        timestamp: new Date().toISOString()
-      });
+      const payload = EventPayloadHelper.createLogoutDisconnectionPayload(this.deviceInfo);
+      this.emitEvent('connection_update', payload);
       this.emitLogoutDisconnection(this.sessionId);
 
       // Chama desconectar para garantir que a sessão seja completamente encerrada
