@@ -1,7 +1,6 @@
 import { WASocket, makeWASocket, DisconnectReason, ConnectionState, BaileysEventMap, AuthenticationState, AuthenticationCreds } from '@whiskeysockets/baileys';
 import { BehaviorSubject, Subject } from 'rxjs';
 import { Boom } from '@hapi/boom';
-import { AuthStateService } from './auth-state/auth-state.service';
 import { SessionEvent } from 'src/common/interfaces/session-event.interface';
 import { SessionData } from 'src/common/interfaces/session.data.interface';
 import { ConnectionStatusEnum, DisconnectionReasonEnum } from 'src/common/interfaces/connection.status.interface';
