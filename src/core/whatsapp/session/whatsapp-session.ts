@@ -13,8 +13,8 @@ import { EventPayloadHelper } from './event-payload.helper';
 export class WhatsAppSession {
   private socket: WASocket | null = null;
   private deviceInfo: DeviceInfo = {};
+  
   private sessionEvents = new BehaviorSubject<SessionEvent | null>(null);
-
   private unexpectedDisconnection = new Subject<UnexpectedDisconnectionEvent>();
   private logoutDisconnection = new Subject<LogoutDisconnectionEvent>();
   private credsUpdate = new Subject<CredsUpdateEvent>();
@@ -24,22 +24,10 @@ export class WhatsAppSession {
 
   constructor(private sessionId: string) { }
 
-  get sessionEvents$() {
-    return this.sessionEvents.asObservable();
-  }
-
-  // getters públicos
-  get unexpectedDisconnection$() {
-    return this.unexpectedDisconnection.asObservable();
-  }
-
-  get logoutDisconnection$() {
-    return this.logoutDisconnection.asObservable();
-  }
-
-  get credsUpdate$() {
-    return this.credsUpdate.asObservable();
-  }
+  get sessionEvents$() { return this.sessionEvents.asObservable() }
+  get unexpectedDisconnection$() { return this.unexpectedDisconnection.asObservable() }
+  get logoutDisconnection$() { return this.logoutDisconnection.asObservable() }
+  get credsUpdate$() { return this.credsUpdate.asObservable() }
 
   public async iniciarSessao(state: AuthenticationState) {
     await this.setupSocket(state);
