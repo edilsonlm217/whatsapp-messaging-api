@@ -13,7 +13,7 @@ import { EventPayloadHelper } from './event-payload.helper';
 export class WhatsAppSession {
   private socket: WASocket | null = null;
   private deviceInfo: DeviceInfo = {};
-  
+
   private sessionEvents = new BehaviorSubject<SessionEvent | null>(null);
   private unexpectedDisconnection = new Subject<UnexpectedDisconnectionEvent>();
   private logoutDisconnection = new Subject<LogoutDisconnectionEvent>();
@@ -29,21 +29,21 @@ export class WhatsAppSession {
   get logoutDisconnection$() { return this.logoutDisconnection.asObservable() }
   get credsUpdate$() { return this.credsUpdate.asObservable() }
 
-  public async iniciarSessao(state: AuthenticationState) {
-    await this.setupSocket(state);
+  public iniciarSessao(state: AuthenticationState) {
+    this.setupSocket(state);
   }
 
-  public async reconectarSessao(state: AuthenticationState) {
+  public reconectarSessao(state: AuthenticationState) {
     const payload = EventPayloadHelper.createReconnectPayload(this.deviceInfo);
     this.emitEvent('connection_update', payload);
-    await this.setupSocket(state);
+    this.setupSocket(state);
   }
 
   public async logout() {
     if (this.socket) { await this.socket.logout() }
   }
 
-  private async setupSocket(state: AuthenticationState) {
+  private setupSocket(state: AuthenticationState) {
     this.socket = makeWASocket({ printQRInTerminal: true, auth: state, qrTimeout: 20000 });
 
     this.socket.ev.on('creds.update', async () => { await this.handleCredsUpdate(state) });
