@@ -26,7 +26,7 @@ export class SessionService implements OnModuleInit {
     const session = new WhatsAppSession(sessionId);
     this.sessionStateService.save(sessionId, session);
     const state = await this.authStateService.getAuthState(sessionId);
-    await session.iniciarSessao(state);
+    session.iniciarSessao(state);
     return session;
   }
 
