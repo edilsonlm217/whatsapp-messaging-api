@@ -20,12 +20,17 @@
     "test:e2e": "jest --config ./test/jest-e2e.json"
   },
   "dependencies": {
+    "@bull-board/api": "^6.9.0",
+    "@bull-board/express": "^6.9.0",
+    "@nestjs/bull": "^11.0.2",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@whiskeysockets/baileys": "^6.7.16",
+    "bull": "^4.16.5",
     "dotenv": "^16.4.7",
+    "ioredis": "^5.6.0",
     "mongodb": "^6.14.2",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"
