@@ -3,6 +3,7 @@ import { MongoClient, Db } from 'mongodb';
 import { ConfigService } from '@nestjs/config';
 import { CredsRepository } from './repositories/creds.repository';
 import { KeysRepository } from './repositories/keys.repository';
+import { EventRepository } from './repositories/event.repository';
 
 @Global()
 @Module({
@@ -36,7 +37,13 @@ import { KeysRepository } from './repositories/keys.repository';
     },
     CredsRepository,
     KeysRepository,
+    EventRepository,
   ],
-  exports: ['DATABASE_CONNECTION', CredsRepository, KeysRepository],
+  exports: [
+    'DATABASE_CONNECTION',
+    CredsRepository,
+    KeysRepository,
+    EventRepository,
+  ],
 })
 export class DatabaseModule { }

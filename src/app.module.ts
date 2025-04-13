@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
 import { WhatsAppModule } from './core/whatsapp/whatsapp.module';
+import { SessionEngineModule } from './core/session-engine/session-engine.module';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { WhatsAppModule } from './core/whatsapp/whatsapp.module';
       envFilePath: '.env',
     }),
     DatabaseModule,
-    WhatsAppModule,
+    SessionEngineModule,
   ],
   controllers: [AppController],
   providers: [AppService],
