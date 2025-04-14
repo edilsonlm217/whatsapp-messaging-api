@@ -3,6 +3,7 @@ import { SessionCreatedEvent } from '../events/session-created/session-created.e
 import { QRCodeRegisteredEvent } from '../events/qr-code-registered/qr-code-registered.event';
 import { SessionOpenedEvent } from '../events/session-opened/session-opened.event';
 import { SessionClosedEvent } from '../events/session-closed/session-closed.event';
+import { SessionCredsUpdatedEvent } from '../events/session-creds-updated/session-creds-updated.event';
 
 export class Session extends AggregateRoot {
   constructor(private readonly sessionId: string) {
@@ -27,6 +28,11 @@ export class Session extends AggregateRoot {
   // Método para fechar a sessão
   close() {
     this.apply(new SessionClosedEvent(this.sessionId));
+  }
+
+  // Método para atualizar credenciais
+  updateCreds() {
+    this.apply(new SessionCredsUpdatedEvent(this.sessionId));
   }
 
   // Rehidratação do aggregate a partir do histórico de eventos
