@@ -3,8 +3,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
-import { WhatsAppModule } from './core/whatsapp/whatsapp.module';
 import { SessionEngineModule } from './core/session-engine/session-engine.module';
+import { EventStoreModule } from './event-store/event-store.module';
 
 @Module({
   imports: [
@@ -13,6 +13,7 @@ import { SessionEngineModule } from './core/session-engine/session-engine.module
       envFilePath: '.env',
     }),
     DatabaseModule,
+    EventStoreModule,
     SessionEngineModule,
   ],
   controllers: [AppController],

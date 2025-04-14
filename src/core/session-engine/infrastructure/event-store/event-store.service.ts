@@ -1,32 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { EventRepository } from 'src/database/repositories/event.repository';
-import { DomainEvent } from './domain-event.interface';
+import { SessionEventsRepository } from 'src/event-store/repositories/session-events.repository';
+import { JSONType } from '@eventstore/db-client';
 
 @Injectable()
 export class EventStoreService {
-  constructor(private readonly eventRepository: EventRepository) { }
+  constructor(
+    private readonly sessionEventsRepository: SessionEventsRepository,
+  ) { }
 
-  async save(events: DomainEvent[]): Promise<void> {
-    for (const event of events) {
-      const storedEvent = {
-        aggregateId: event.aggregateId,
-        type: event.type,
-        payload: event.payload,
-        occurredOn: event.occurredOn.toISOString(),
-      };
-
-      await this.eventRepository.save(storedEvent);
-    }
+  // Restrição de T para garantir que seja um tipo compatível com JSONType
+  async appendEvent<T extends JSONType>(sessionId: string, eventType: string, data: T): Promise<void> {
+    await this.sessionEventsRepository.appendEvent(sessionId, eventType, data);
   }
 
-  async getEventsForAggregate(aggregateId: string): Promise<DomainEvent[]> {
-    const storedEvents = await this.eventRepository.findByAggregateId(aggregateId);
-
-    return storedEvents.map(event => ({
-      aggregateId: event.aggregateId,
-      type: event.type,
-      payload: event.payload,
-      occurredOn: new Date(event.occurredOn),
-    }));
+  async readEvents(sessionId: string) {
+    return await this.sessionEventsRepository.readEvents(sessionId);
   }
 }

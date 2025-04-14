@@ -8,6 +8,8 @@ import { SessionEngineController } from './session-engine.controller';
 import { SessionCreatedHandler } from './events/session-created/session-created-handler';
 import { EventStoreModule } from './infrastructure/event-store/event-store.module';
 import { CreateSessionHandler } from './commands/create-session/create-session.handler';
+import { RegisterSessionQRCodeHandler } from './commands/register-session-qr-code/register-session-qr-code.handler';
+import { QRCodeRegisteredHandler } from './events/qr-code-registered/qr-code-registered.handler';
 
 @Module({
   imports: [
@@ -22,6 +24,8 @@ import { CreateSessionHandler } from './commands/create-session/create-session.h
     WhatsAppEventsListener,
     CreateSessionHandler,
     SessionCreatedHandler,
+    RegisterSessionQRCodeHandler,
+    QRCodeRegisteredHandler,
   ],
   exports: []
 })
