@@ -1,6 +1,7 @@
 import { AggregateRoot } from '@nestjs/cqrs';
 import { SessionCreatedEvent } from '../events/session-created/session-created.event';
 import { QRCodeRegisteredEvent } from '../events/qr-code-registered/qr-code-registered.event';
+import { SessionOpenedEvent } from '../events/session-opened/session-opened.event';
 
 export class Session extends AggregateRoot {
   constructor(private readonly sessionId: string) {
@@ -15,6 +16,11 @@ export class Session extends AggregateRoot {
   // Método para registrar QR code
   registerQRCode(qrCode: string) {
     this.apply(new QRCodeRegisteredEvent(this.sessionId, qrCode));
+  }
+
+  // Método para abrir a sessão
+  open() {
+    this.apply(new SessionOpenedEvent(this.sessionId));
   }
 
   // Rehidratação do aggregate a partir do histórico de eventos
