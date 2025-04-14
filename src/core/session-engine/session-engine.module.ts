@@ -10,6 +10,12 @@ import { EventStoreModule } from './infrastructure/event-store/event-store.modul
 import { CreateSessionHandler } from './commands/create-session/create-session.handler';
 import { RegisterSessionQRCodeHandler } from './commands/register-session-qr-code/register-session-qr-code.handler';
 import { QRCodeRegisteredHandler } from './events/qr-code-registered/qr-code-registered.handler';
+import { CloseSessionHandler } from './commands/close-session/close-session.handler';
+import { SessionClosedHandler } from './events/session-closed/session-closed.handler';
+import { OpenSessionHandler } from './commands/open-session/open-session.handler';
+import { SessionOpenedHandler } from './events/session-opened/session-opened.handler';
+import { UpdateSessionCredsHandler } from './commands/update-session-creds/update-session-creds.handler';
+import { SessionCredsUpdatedHandler } from './events/session-creds-updated/session-creds-updated.handler';
 
 @Module({
   imports: [
@@ -22,10 +28,16 @@ import { QRCodeRegisteredHandler } from './events/qr-code-registered/qr-code-reg
   providers: [
     WhatsAppService,
     WhatsAppEventsListener,
+    CloseSessionHandler,
+    SessionClosedHandler,
     CreateSessionHandler,
     SessionCreatedHandler,
+    OpenSessionHandler,
+    SessionOpenedHandler,
     RegisterSessionQRCodeHandler,
     QRCodeRegisteredHandler,
+    UpdateSessionCredsHandler,
+    SessionCredsUpdatedHandler
   ],
   exports: []
 })
