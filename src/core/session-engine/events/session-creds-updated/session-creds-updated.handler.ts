@@ -16,7 +16,7 @@ export class SessionCredsUpdatedHandler implements IEventHandler<SessionCredsUpd
     // Aqui estamos apenas enviando um evento de exemplo. Ajuste conforme sua necessidade
     const eventData = { type, aggregateId, occurredOn, payload };  // Dados do evento a serem salvos
 
-    await this.eventStore.appendEvent(aggregateId, 'SessionCreated', eventData);
+    await this.eventStore.appendEvent(aggregateId, 'SessionCredsUpdated', eventData);
 
     // Caso você precise fazer algo adicional (como registrar logs, notificar outros serviços, etc), faça aqui.
   }

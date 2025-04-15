@@ -25,7 +25,15 @@ export class WhatsAppService {
     });
 
     socket.ev.on('creds.update', async () => {
-      this.eventEmitter.emit('socket.creds.update', { sessionId, creds: state.creds });
+      const authState = socket.authState;
+      const phone = authState.creds?.me?.id;
+      const phonePlatform = authState.creds?.platform;
+      this.eventEmitter.emit('socket.creds.update', {
+        sessionId,
+        phone,
+        phonePlatform,
+        creds: state.creds,
+      });
     });
 
     // Lida com eventos de atualização da conexão

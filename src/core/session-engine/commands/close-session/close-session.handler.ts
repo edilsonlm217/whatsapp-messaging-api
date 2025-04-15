@@ -13,7 +13,7 @@ export class CloseSessionHandler implements ICommandHandler<CloseSessionCommand>
   ) { }
 
   async execute(command: CloseSessionCommand): Promise<void> {
-    const { sessionId } = command;
+    const { sessionId, reason } = command;
 
     // Lê os eventos persistidos
     const events = await this.eventStore.readEvents(sessionId);
@@ -22,7 +22,7 @@ export class CloseSessionHandler implements ICommandHandler<CloseSessionCommand>
     const session = this.publisher.mergeObjectContext(Session.rehydrateFromHistory(events));
 
     // Aplica o novo evento
-    session.close();
+    session.close(reason);
 
     // Comita para o EventBus
     session.commit();

@@ -16,6 +16,8 @@ import { OpenSessionHandler } from './commands/open-session/open-session.handler
 import { SessionOpenedHandler } from './events/session-opened/session-opened.handler';
 import { UpdateSessionCredsHandler } from './commands/update-session-creds/update-session-creds.handler';
 import { SessionCredsUpdatedHandler } from './events/session-creds-updated/session-creds-updated.handler';
+import { RestartSessionHandler } from './commands/restart-session/restart-session.handler';
+import { SessionRestartedHandler } from './events/session-restarted/session-restarted.handler';
 
 @Module({
   imports: [
@@ -37,7 +39,9 @@ import { SessionCredsUpdatedHandler } from './events/session-creds-updated/sessi
     RegisterSessionQRCodeHandler,
     QRCodeRegisteredHandler,
     UpdateSessionCredsHandler,
-    SessionCredsUpdatedHandler
+    SessionCredsUpdatedHandler,
+    SessionRestartedHandler,
+    RestartSessionHandler
   ],
   exports: []
 })

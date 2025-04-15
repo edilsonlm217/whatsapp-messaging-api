@@ -21,8 +21,8 @@ export class CreateSessionHandler implements ICommandHandler<CreateSessionComman
     const session = this.publisher.mergeObjectContext(new Session(sessionId));
 
     // Inicializa o socket através do WhatsAppInfraService
-    // const state = await this.authStateService.getAuthState(sessionId);
-    // this.whatsAppService.createSocket(sessionId, state);
+    const state = await this.authStateService.getAuthState(sessionId);
+    this.whatsAppService.createSocket(sessionId, state);
 
     // Aplica o evento de criação da sessão
     session.create(); // Passa o socket para o Aggregate

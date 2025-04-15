@@ -45,10 +45,12 @@ export class WhatsAppEventsListener {
   }
 
   @OnEvent('socket.creds.update')
-  async handleCredsUpdate(payload: { sessionId: string; creds: AuthenticationCreds }) {
+  async handleCredsUpdate(payload: { sessionId: string; phone: string, phonePlatform: string, creds: AuthenticationCreds }) {
     console.log(`Credenciais atualizadas para a sessão ${payload.sessionId}.`);
     await this.commandBus.execute(new UpdateSessionCredsCommand(
       payload.sessionId,
+      payload.phone,
+      payload.phonePlatform,
       payload.creds
     ));
   }
