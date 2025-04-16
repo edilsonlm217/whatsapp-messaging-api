@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SessionEventsRepository } from 'src/event-store/repositories/session-events.repository';
+import { SessionEventsRepository } from 'src/database/event-store/repositories/session-events.repository';
 import { JSONType } from '@eventstore/db-client';
 
 @Injectable()

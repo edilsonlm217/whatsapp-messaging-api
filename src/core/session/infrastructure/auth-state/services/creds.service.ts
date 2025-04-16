@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { AuthenticationCreds, initAuthCreds } from "@whiskeysockets/baileys";
-import { CredsRepository } from "src/database/repositories/creds.repository";
+import { CredsRepository } from "src/database/mongo/repositories/creds.repository";
 
 @Injectable()
 export class CredsService {

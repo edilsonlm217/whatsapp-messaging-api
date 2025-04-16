@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { SignalDataSet } from "@whiskeysockets/baileys";
-import { KeysRepository } from "src/database/repositories/keys.repository";
+import { KeysRepository } from "src/database/mongo/repositories/keys.repository";
 
 @Injectable()
 export class KeysService {

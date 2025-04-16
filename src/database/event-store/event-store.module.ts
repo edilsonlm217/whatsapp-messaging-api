@@ -1,9 +1,8 @@
-import { Module, Global } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EventStoreDBClient } from '@eventstore/db-client';
 import { SessionEventsRepository } from './repositories/session-events.repository';
 
-@Global()
 @Module({
   providers: [
     {
