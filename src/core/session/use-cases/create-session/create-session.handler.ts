@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { CommandHandler, ICommandHandler, EventPublisher } from "@nestjs/cqrs";
 import { Session } from "../../domain/session.aggregate";
 import { WhatsAppService } from "../../infrastructure/whatsapp/whatsapp.service";
-import { AuthStateService } from "src/core/auth-state/auth-state.service";
+import { AuthStateService } from "src/core/session/infrastructure/auth-state/auth-state.service";
 import { CreateSessionCommand } from "./create-session.command";
 
 @CommandHandler(CreateSessionCommand)

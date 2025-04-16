@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { CqrsModule } from '@nestjs/cqrs';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 
-import { AuthStateModule } from '../auth-state/auth-state.module';
+import { AuthStateModule } from './infrastructure/auth-state/auth-state.module';
 import { EventStoreModule } from './infrastructure/event-store/event-store.module';
 
 import * as CreateSession from './use-cases/create-session';

@@ -3,7 +3,7 @@ import { CommandHandler, EventPublisher, ICommandHandler } from "@nestjs/cqrs";
 import { UpdateSessionCredsCommand } from "./update-session-creds.command";
 import { EventStoreService } from "../../infrastructure/event-store/event-store.service";
 import { Session } from "../../domain/session.aggregate";
-import { AuthStateService } from "src/core/auth-state/auth-state.service";
+import { AuthStateService } from "src/core/session/infrastructure/auth-state/auth-state.service";
 
 @CommandHandler(UpdateSessionCredsCommand)
 @Injectable()
