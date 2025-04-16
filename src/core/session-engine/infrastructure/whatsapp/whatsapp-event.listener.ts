@@ -3,7 +3,7 @@ import { CommandBus } from '@nestjs/cqrs';
 import { OnEvent } from '@nestjs/event-emitter';
 import { AuthenticationCreds } from '@whiskeysockets/baileys';
 
-import { OpenSessionCommand } from '../../commands/open-session/open-session.command';
+import { OpenSessionCommand } from '../../use-cases/open-session/open-session.command';
 import { CloseSessionCommand } from '../../use-cases/close-session/close-session.command';
 import { UpdateSessionCredsCommand } from '../../commands/update-session-creds/update-session-creds.command';
 import { RegisterSessionQRCodeCommand } from '../../commands/register-session-qr-code/register-session-qr-code.command';
