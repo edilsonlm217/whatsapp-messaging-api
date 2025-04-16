@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { CommandHandler, EventPublisher, ICommandHandler } from "@nestjs/cqrs";
 import { OpenSessionCommand } from "./open-session.command";
 import { EventStoreService } from "../../infrastructure/event-store/event-store.service";
-import { Session } from "../../aggregates/session.aggregate";
+import { Session } from "../../domain/session.aggregate";
 
 @CommandHandler(OpenSessionCommand)
 @Injectable()
