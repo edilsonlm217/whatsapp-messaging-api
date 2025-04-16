@@ -2,7 +2,7 @@ import { CommandBus, EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { SessionClosedEvent } from './session-closed.event';
 import { Injectable } from '@nestjs/common';
 import { EventStoreService } from '../../infrastructure/event-store/event-store.service';
-import { RestartSessionCommand } from '../../commands/restart-session/restart-session.command';
+import { RestartSessionCommand } from '../restart-session/restart-session.command';
 import { WhatsAppService } from '../../infrastructure/whatsapp/whatsapp.service';
 
 @EventsHandler(SessionClosedEvent)

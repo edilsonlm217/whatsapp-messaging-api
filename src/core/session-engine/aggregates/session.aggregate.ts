@@ -3,8 +3,8 @@ import { SessionCreatedEvent } from '../use-cases/create-session/session-created
 import { QRCodeRegisteredEvent } from '../events/qr-code-registered/qr-code-registered.event';
 import { SessionOpenedEvent } from '../use-cases/open-session';
 import { SessionClosedEvent } from '../use-cases/close-session';
+import { SessionRestartedEvent } from '../use-cases/restart-session';
 import { SessionCredsUpdatedEvent } from '../events/session-creds-updated/session-creds-updated.event';
-import { SessionRestartedEvent } from '../events/session-restarted/session-restarted.event';
 
 export class Session extends AggregateRoot {
   constructor(private readonly sessionId: string) {
