@@ -5,7 +5,7 @@ import { AuthenticationCreds } from '@whiskeysockets/baileys';
 
 import { OpenSessionCommand } from '../../use-cases/open-session/open-session.command';
 import { CloseSessionCommand } from '../../use-cases/close-session/close-session.command';
-import { UpdateSessionCredsCommand } from '../../commands/update-session-creds/update-session-creds.command';
+import { UpdateSessionCredsCommand } from '../../use-cases/update-session-creds/update-session-creds.command';
 import { RegisterSessionQRCodeCommand } from '../../commands/register-session-qr-code/register-session-qr-code.command';
 
 @Injectable()

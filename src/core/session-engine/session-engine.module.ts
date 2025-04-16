@@ -8,12 +8,11 @@ import { SessionEngineController } from './session-engine.controller';
 import { EventStoreModule } from './infrastructure/event-store/event-store.module';
 import { RegisterSessionQRCodeHandler } from './commands/register-session-qr-code/register-session-qr-code.handler';
 import { QRCodeRegisteredHandler } from './events/qr-code-registered/qr-code-registered.handler';
-import { UpdateSessionCredsHandler } from './commands/update-session-creds/update-session-creds.handler';
-import { SessionCredsUpdatedHandler } from './events/session-creds-updated/session-creds-updated.handler';
 import * as CreateSession from './use-cases/create-session';
 import * as CloseSession from './use-cases/close-session';
 import * as OpenSession from './use-cases/open-session';
 import * as RestartSession from './use-cases/restart-session';
+import * as UpdateSessionCreds from './use-cases/update-session-creds';
 
 @Module({
   imports: [
@@ -34,10 +33,10 @@ import * as RestartSession from './use-cases/restart-session';
     OpenSession.SessionOpenedHandler,
     RestartSession.SessionRestartedHandler,
     RestartSession.RestartSessionHandler,
+    UpdateSessionCreds.UpdateSessionCredsHandler,
+    UpdateSessionCreds.SessionCredsUpdatedHandler,
     RegisterSessionQRCodeHandler,
     QRCodeRegisteredHandler,
-    UpdateSessionCredsHandler,
-    SessionCredsUpdatedHandler,
   ],
   exports: []
 })
