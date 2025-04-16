@@ -1,6 +1,6 @@
 import { AggregateRoot } from '@nestjs/cqrs';
 import { SessionCreatedEvent } from '../use-cases/create-session/session-created.event';
-import { QRCodeRegisteredEvent } from '../events/qr-code-registered/qr-code-registered.event';
+import { QRCodeRegisteredEvent } from '../use-cases/register-session-qr-code';
 import { SessionOpenedEvent } from '../use-cases/open-session';
 import { SessionClosedEvent } from '../use-cases/close-session';
 import { SessionRestartedEvent } from '../use-cases/restart-session';
