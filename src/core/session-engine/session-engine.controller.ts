@@ -1,6 +1,6 @@
 import { Body, Controller, Post } from "@nestjs/common";
 import { CommandBus } from "@nestjs/cqrs";
-import { CreateSessionCommand } from "./commands/create-session/create-session.command";
+import { CreateSessionCommand } from "./use-cases/create-session";
 
 @Controller('sessions')
 export class SessionEngineController {

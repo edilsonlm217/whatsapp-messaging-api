@@ -5,9 +5,7 @@ import { WhatsAppService } from './infrastructure/whatsapp/whatsapp.service';
 import { WhatsAppEventsListener } from './infrastructure/whatsapp/whatsapp-event.listener';
 import { AuthStateModule } from '../auth-state/auth-state.module';
 import { SessionEngineController } from './session-engine.controller';
-import { SessionCreatedHandler } from './events/session-created/session-created-handler';
 import { EventStoreModule } from './infrastructure/event-store/event-store.module';
-import { CreateSessionHandler } from './commands/create-session/create-session.handler';
 import { RegisterSessionQRCodeHandler } from './commands/register-session-qr-code/register-session-qr-code.handler';
 import { QRCodeRegisteredHandler } from './events/qr-code-registered/qr-code-registered.handler';
 import { CloseSessionHandler } from './commands/close-session/close-session.handler';
@@ -18,6 +16,7 @@ import { UpdateSessionCredsHandler } from './commands/update-session-creds/updat
 import { SessionCredsUpdatedHandler } from './events/session-creds-updated/session-creds-updated.handler';
 import { RestartSessionHandler } from './commands/restart-session/restart-session.handler';
 import { SessionRestartedHandler } from './events/session-restarted/session-restarted.handler';
+import * as CreateSession from './use-cases/create-session';
 
 @Module({
   imports: [
@@ -32,8 +31,8 @@ import { SessionRestartedHandler } from './events/session-restarted/session-rest
     WhatsAppEventsListener,
     CloseSessionHandler,
     SessionClosedHandler,
-    CreateSessionHandler,
-    SessionCreatedHandler,
+    CreateSession.CreateSessionHandler,
+    CreateSession.SessionCreatedHandler,
     OpenSessionHandler,
     SessionOpenedHandler,
     RegisterSessionQRCodeHandler,
