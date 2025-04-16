@@ -14,7 +14,7 @@ import * as RegisterSessionQrCode from './use-cases/register-session-qr-code';
 
 import { WhatsAppService } from './infrastructure/whatsapp/whatsapp.service';
 import { WhatsAppEventsListener } from './infrastructure/whatsapp/whatsapp-event.listener';
-import { SessionEngineController } from './session-engine.controller';
+import { SessionController } from './session.controller';
 
 @Module({
   imports: [
@@ -23,7 +23,7 @@ import { SessionEngineController } from './session-engine.controller';
     AuthStateModule,
     EventStoreModule,
   ],
-  controllers: [SessionEngineController],
+  controllers: [SessionController],
   providers: [
     WhatsAppService,
     WhatsAppEventsListener,
@@ -42,4 +42,4 @@ import { SessionEngineController } from './session-engine.controller';
   ],
   exports: []
 })
-export class SessionEngineModule { }
+export class SessionModule { }

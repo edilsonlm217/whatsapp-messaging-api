@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseModule } from './database/database.module';
-import { SessionEngineModule } from './core/session-engine/session-engine.module';
+import { SessionModule } from './core/session/session.module';
 import { EventStoreModule } from './event-store/event-store.module';
 
 @Module({
@@ -14,7 +14,7 @@ import { EventStoreModule } from './event-store/event-store.module';
     }),
     DatabaseModule,
     EventStoreModule,
-    SessionEngineModule,
+    SessionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

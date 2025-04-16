@@ -3,7 +3,7 @@ import { CommandBus } from "@nestjs/cqrs";
 import { CreateSessionCommand } from "./use-cases/create-session";
 
 @Controller('sessions')
-export class SessionEngineController {
+export class SessionController {
   constructor(private readonly commandBus: CommandBus) { }
 
   @Post()
