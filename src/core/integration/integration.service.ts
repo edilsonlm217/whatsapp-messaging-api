@@ -31,4 +31,15 @@ export class IntegrationService {
       console.error(error);
     }
   }
+
+  // Esse método será chamado quando o evento 'socket.connection.closed' for emitido
+  @OnEvent('socket.connection.closed')
+  async handleConnectionClosed(payload: { sessionId: string; reason: string }) {
+    try {
+      console.log('Evento recebido no IntegrationService (Connection Closed):', payload);
+      await this.sessionService.closeSession(payload.sessionId, payload.reason);
+    } catch (error) {
+      console.error(error);
+    }
+  }
 }
