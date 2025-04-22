@@ -69,7 +69,18 @@ export class IntegrationService {
       console.log('Evento recebido no IntegrationService (Connection Closed):', payload);
       await this.sessionService.closeSession(payload.sessionId, payload.reason);
       if (payload.reason === 'logout')
-      await this.whatsAppService.delete(payload.sessionId);
+        await this.whatsAppService.delete(payload.sessionId);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  // Esse método será chamado quando o evento 'socket.connection.opened' for emitido
+  @OnEvent('socket.connection.opened')
+  async handleConnectionOpened(payload: { sessionId: string }) {
+    try {
+      console.log('Evento recebido no IntegrationService (Connection Opened):', payload);
+      await this.sessionService.openSession(payload.sessionId);
     } catch (error) {
       console.error(error);
     }
