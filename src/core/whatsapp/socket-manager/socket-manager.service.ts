@@ -36,4 +36,9 @@ export class SocketManagerService {
   clearSockets(): void {
     this.socketsMap.clear();
   }
+
+  // Substitui um socket existente por um novo
+  replaceSocket(sessionId: string, newSocket: WASocket): void {
+    this.socketsMap.set(sessionId, newSocket);  // Substitui o socket existente (se houver)
+  }
 }

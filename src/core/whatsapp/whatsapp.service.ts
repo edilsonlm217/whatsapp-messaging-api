@@ -22,6 +22,30 @@ export class WhatsAppService {
     this.socketManagerService.addSocket(sessionId, socket);
   }
 
+  async restart(sessionId: string) {
+    const socketExists = this.socketManagerService.hasSocket(sessionId);
+    if (!socketExists) throw new Error('Socket does not exist');
+
+    const state = await this.authStateService.getAuthState(sessionId);
+    const newSocket = this.baileysService.createSocket(sessionId, state);
+    this.socketManagerService.replaceSocket(sessionId, newSocket);
+  }
+
+  async delete(sessionId: string) {
+    const socketExists = this.socketManagerService.hasSocket(sessionId);
+    if (!socketExists) throw new Error('Socket does not exist');
+    await this.authStateService.deleteAuthState(sessionId);
+    this.socketManagerService.removeSocket(sessionId);
+  }
+
+  async logout(sessionId: string): Promise<void> {
+    const socket = this.socketManagerService.getSocket(sessionId);
+    if (!socket) throw new Error('Socket does not exist')
+    await socket.logout();
+    await this.authStateService.deleteAuthState(sessionId);
+    this.socketManagerService.removeSocket(sessionId);
+  }
+
   getCategoryStream() {
     return this.baileysEventsStore.getCategoryStream();
   }

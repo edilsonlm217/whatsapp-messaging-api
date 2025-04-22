@@ -1,15 +1,15 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { SessionModule } from './core/session/session.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { DatabaseModule } from './database/database.module';
-import { WhatsAppModule } from './core/whatsapp/whatsapp.module';
+import { IntegrationModule } from './core/integration/integration.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    EventEmitterModule.forRoot(),
     DatabaseModule,
-    SessionModule,
-    WhatsAppModule
+    IntegrationModule
   ],
   controllers: [],
   providers: [],

@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { AuthenticationState, makeWASocket, WASocket } from '@whiskeysockets/baileys';
+import { AuthenticationState, DisconnectReason, makeWASocket, WASocket } from '@whiskeysockets/baileys';
 import { BaileysEventsStore } from './store/baileys-events.store';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BAILEYS_EVENTS } from './events';
+import { Boom } from '@hapi/boom';
 
 @Injectable()
 export class BaileysService {
@@ -43,6 +44,26 @@ export class BaileysService {
           sessionId,
           qrCode: update.qr,
         });
+      }
+
+      if (update.connection === 'close') {
+        const error = update.lastDisconnect?.error as Boom;
+        const statusCode = error?.output?.statusCode;
+        const restartRequired = statusCode === DisconnectReason.restartRequired;
+
+        if (restartRequired) {
+          // Emitir evento de desconexão com motivo de reinício requerido
+          this.eventEmitter.emit('socket.connection.closed', {
+            sessionId,
+            reason: 'unexpected',  // Ou qualquer outra informação relevante
+          });
+        } else {
+          // Emitir evento de desconexão com motivo de logout
+          this.eventEmitter.emit('socket.connection.closed', {
+            sessionId,
+            reason: 'logout',  // Ou qualquer outra informação relevante
+          });
+        }
       }
     });
   }

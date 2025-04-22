@@ -5,6 +5,7 @@ import { SessionOpenedEvent } from '../use-cases/open-session';
 import { SessionClosedEvent } from '../use-cases/close-session';
 import { SessionRestartedEvent } from '../use-cases/restart-session';
 import { SessionCredsUpdatedEvent } from '../use-cases/update-session-creds';
+import { SessionLoggedOutEvent } from '../use-cases/logout-session/session-logged-out.event';
 
 export class Session extends AggregateRoot {
   constructor(private readonly sessionId: string) {
@@ -35,6 +36,11 @@ export class Session extends AggregateRoot {
   // Método para fechar a sessão
   close(reason: string) {
     this.apply(new SessionClosedEvent(this.sessionId, reason));
+  }
+
+  // Método para deslogar a sessão
+  logout() {
+    this.apply(new SessionLoggedOutEvent(this.sessionId));
   }
 
   // Método para atualizar credenciais

@@ -3,6 +3,7 @@ import { CqrsModule } from '@nestjs/cqrs';
 
 import { SessionController } from './session.controller';
 import { SessionService } from './session.service';
+import { SessionEventsStore } from './infrastructure/session-event-store/session-events.store';
 
 import * as CreateSession from './use-cases/create-session';
 import * as CloseSession from './use-cases/close-session';
@@ -10,12 +11,10 @@ import * as OpenSession from './use-cases/open-session';
 import * as RestartSession from './use-cases/restart-session';
 import * as UpdateSessionCreds from './use-cases/update-session-creds';
 import * as RegisterSessionQrCode from './use-cases/register-session-qr-code';
-import { SessionEventsStore } from './infrastructure/session-event-store/session-events.store';
+import * as LogoutSession from './use-cases/logout-session';
 
 @Module({
-  imports: [
-    CqrsModule,
-  ],
+  imports: [CqrsModule],
   controllers: [SessionController],
   providers: [
     SessionService,
@@ -32,6 +31,8 @@ import { SessionEventsStore } from './infrastructure/session-event-store/session
     UpdateSessionCreds.SessionCredsUpdatedHandler,
     RegisterSessionQrCode.RegisterSessionQRCodeHandler,
     RegisterSessionQrCode.QRCodeRegisteredHandler,
+    LogoutSession.LogoutSessionCommand,
+    LogoutSession.SessionClosedHandler,
   ],
   exports: [SessionService]
 })
