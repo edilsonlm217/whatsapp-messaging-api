@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { AuthenticationState, makeWASocket, WASocket } from '@whiskeysockets/baileys';
 import { BaileysEventsStore } from './store/baileys-events.store';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BAILEYS_EVENTS } from './events';
 
 @Injectable()
 export class BaileysService {
-  constructor(private readonly baileysEventsStore: BaileysEventsStore) { }
+  constructor(
+    private readonly baileysEventsStore: BaileysEventsStore,
+    private readonly eventEmitter: EventEmitter2,  // Adicionando o EventEmitter2
+  ) { }
 
   createSocket(sessionId: string, state: AuthenticationState): WASocket {
     const socket = makeWASocket({ printQRInTerminal: true, auth: state, qrTimeout: 20000 });
@@ -33,6 +37,13 @@ export class BaileysService {
         aggregateId: sessionId,
         payload: update,
       });
+
+      if (update.qr) {
+        this.eventEmitter.emit('socket.qrcode.generated', {
+          sessionId,
+          qrCode: update.qr,
+        });
+      }
     });
   }
 }
