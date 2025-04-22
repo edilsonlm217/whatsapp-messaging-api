@@ -1,9 +1,12 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { EventStoreDBClient, jsonEvent, START } from '@eventstore/db-client';
+import { END, EventStoreDBClient, jsonEvent, START } from '@eventstore/db-client';
 import { BaileysRawEvent } from '../interface/baileys-raw-event.interface';
 
 @Injectable()
 export class BaileysEventsStore {
+  private static readonly STREAM_PREFIX = 'baileys';
+  private static readonly CATEGORY_STREAM = `$ce-${BaileysEventsStore.STREAM_PREFIX}`;
+
   constructor(
     @Inject('EVENTSTORE_CONNECTION')
     private readonly eventStore: EventStoreDBClient,
@@ -24,8 +27,9 @@ export class BaileysEventsStore {
   }
 
   getCategoryStream() {
-    return this.eventStore.subscribeToStream('$ce-baileys', {
-      fromRevision: START,
+    return this.eventStore.subscribeToStream(BaileysEventsStore.CATEGORY_STREAM, {
+      fromRevision: END,
+      resolveLinkTos: true
     });
   }
 

@@ -8,10 +8,14 @@ import { CloseSessionCommand } from './use-cases/close-session';
 import { RegisterSessionQRCodeCommand } from './use-cases/register-session-qr-code';
 import { RestartSessionCommand } from './use-cases/restart-session';
 import { UpdateSessionCredsCommand } from './use-cases/update-session-creds';
+import { SessionEventsStore } from './infrastructure/session-event-store/session-events.store';
 
 @Injectable()
 export class SessionService {
-  constructor(private readonly commandBus: CommandBus) { }
+  constructor(
+    private readonly commandBus: CommandBus,
+    private readonly sessionEventsStore: SessionEventsStore,
+  ) { }
 
   async createSession(sessionId: string) {
     await this.commandBus.execute(new CreateSessionCommand(sessionId));
@@ -41,5 +45,9 @@ export class SessionService {
   async updateCreds(sessionId: string, phone: string, phonePlatform: string, creds: AuthenticationCreds) {
     await this.commandBus.execute(new UpdateSessionCredsCommand(sessionId, phone, phonePlatform, creds));
     return { message: 'Session credentials updated!' };
+  }
+
+  getCategoryStream() {
+    return this.sessionEventsStore.getCategoryStream();
   }
 }

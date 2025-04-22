@@ -14,8 +14,7 @@ export class CreateSessionHandler implements ICommandHandler<CreateSessionComman
 
   async execute(command: CreateSessionCommand): Promise<void> {
     const { sessionId } = command;
-    const events = await this.sessionEventsStore.readEvents(sessionId);
-    const session = this.publisher.mergeObjectContext(Session.rehydrateFromHistory(events));
+    const session = this.publisher.mergeObjectContext(new Session(sessionId));
     session.create();
     session.commit();
   }

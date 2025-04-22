@@ -22,7 +22,7 @@ export class WhatsAppService {
     this.socketManagerService.addSocket(sessionId, socket);
   }
 
-  getAllEventsStream() {
+  getCategoryStream() {
     return this.baileysEventsStore.getCategoryStream();
   }
 

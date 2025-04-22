@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { EventStoreDBClient, FORWARDS, jsonEvent, ResolvedEvent, START } from '@eventstore/db-client';
+import { END, EventStoreDBClient, FORWARDS, jsonEvent, ResolvedEvent, START } from '@eventstore/db-client';
 import { SessionEvent } from './interface/session-event.interface';
 
 @Injectable()
@@ -43,7 +43,8 @@ export class SessionEventsStore {
 
   getCategoryStream() {
     return this.eventStore.subscribeToStream(SessionEventsStore.CATEGORY_STREAM, {
-      fromRevision: START,
+      fromRevision: END,
+      resolveLinkTos: true
     });
   }
 
