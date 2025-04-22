@@ -1,18 +1,21 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { QRCodeRegisteredEvent } from './qr-code-registered.event';
 import { Injectable } from '@nestjs/common';
-import { EventStoreService } from '../../infrastructure/event-store/event-store.service';
-
+import { SessionEventsStore } from '../../infrastructure/session-event-store/session-events.store';
 @EventsHandler(QRCodeRegisteredEvent)
 @Injectable()
 export class QRCodeRegisteredHandler implements IEventHandler<QRCodeRegisteredEvent> {
-  constructor(private readonly eventStore: EventStoreService) { }
+  constructor(private readonly sessionEventsStore: SessionEventsStore) { }
 
-  async handle(event: QRCodeRegisteredEvent): Promise<void> {
-    const { aggregateId, occurredOn, payload, type } = event;
-
-    const eventData = { type, aggregateId, occurredOn, payload };
-
-    await this.eventStore.appendEvent(aggregateId, 'QRCodeRegistered', eventData);
+  async handle(event: QRCodeRegisteredEvent) {
+    const { sessionId, qrCode } = event;
+    await this.sessionEventsStore.append({
+      aggregateId: sessionId,
+      type: 'QRCodeRegistered',
+      payload: {
+        sessionId: sessionId,
+        qrCode: qrCode
+      }
+    });
   }
 }

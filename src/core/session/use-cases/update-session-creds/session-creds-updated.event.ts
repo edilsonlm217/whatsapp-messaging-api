@@ -1,11 +1,7 @@
-import { DomainEvent } from "../../infrastructure/event-store/domain-event";
-
-export class SessionCredsUpdatedEvent extends DomainEvent {
+export class SessionCredsUpdatedEvent {
   constructor(
-    sessionId: string,
-    phone: string,
-    phonePlatform: string
-  ) {
-    super(sessionId, 'session.creds.updated', { sessionId, phone, phonePlatform });
-  }
+    public readonly sessionId: string,
+    public readonly phone: string,
+    public readonly phonePlatform: string
+  ) { }
 }

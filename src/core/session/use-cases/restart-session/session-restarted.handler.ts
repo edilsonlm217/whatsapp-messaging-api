@@ -1,19 +1,21 @@
 import { EventsHandler, IEventHandler } from '@nestjs/cqrs';
 import { Injectable } from '@nestjs/common';
-import { EventStoreService } from '../../infrastructure/event-store/event-store.service';
 import { SessionRestartedEvent } from './session-restarted.event';
+import { SessionEventsStore } from '../../infrastructure/session-event-store/session-events.store';
 
 @EventsHandler(SessionRestartedEvent)
 @Injectable()
 export class SessionRestartedHandler implements IEventHandler<SessionRestartedEvent> {
-  constructor(private readonly eventStore: EventStoreService) { }
+  constructor(private readonly sessionEventsStore: SessionEventsStore) { }
 
-  async handle(event: SessionRestartedEvent): Promise<void> {
-    console.log('SessionRestartedHandler is running');
-    const { aggregateId, occurredOn, payload, type } = event;
-
-    const eventData = { type, aggregateId, occurredOn, payload };
-
-    await this.eventStore.appendEvent(aggregateId, 'SessionRestarted', eventData);
+  async handle(event: SessionRestartedEvent) {
+    const { sessionId } = event;
+    await this.sessionEventsStore.append({
+      aggregateId: sessionId,
+      type: 'SessionRestarted',
+      payload: {
+        sessionId: sessionId
+      }
+    });
   }
 }
