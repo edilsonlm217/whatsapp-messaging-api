@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { AuthenticationState, DisconnectReason, makeWASocket, WASocket } from '@whiskeysockets/baileys';
+import { AuthenticationState, ConnectionState, DisconnectReason, makeWASocket, WASocket } from '@whiskeysockets/baileys';
 import { BaileysEventsStore } from './store/baileys-events.store';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { BAILEYS_EVENTS } from './events';
@@ -39,32 +39,33 @@ export class BaileysService {
         payload: update,
       });
 
-      if (update.qr) {
-        this.eventEmitter.emit('socket.qrcode.generated', {
-          sessionId,
-          qrCode: update.qr,
-        });
-      }
+      if (update.qr) { this.handleQRCodeGenerated(sessionId, update.qr) }
+      if (update.connection === 'close') { this.handleConnectionClosed(sessionId, update) }
+      if (update.connection === 'open') { this.handleConnectionOpened(sessionId) }
+    });
+  }
 
-      if (update.connection === 'close') {
-        const error = update.lastDisconnect?.error as Boom;
-        const statusCode = error?.output?.statusCode;
-        const restartRequired = statusCode === DisconnectReason.restartRequired;
+  private handleQRCodeGenerated(sessionId: string, qrCode: string) {
+    this.eventEmitter.emit('socket.qrcode.generated', {
+      sessionId,
+      qrCode,
+    });
+  }
 
-        if (restartRequired) {
-          // Emitir evento de desconexão com motivo de reinício requerido
-          this.eventEmitter.emit('socket.connection.closed', {
-            sessionId,
-            reason: 'unexpected',  // Ou qualquer outra informação relevante
-          });
-        } else {
-          // Emitir evento de desconexão com motivo de logout
-          this.eventEmitter.emit('socket.connection.closed', {
-            sessionId,
-            reason: 'logout',  // Ou qualquer outra informação relevante
-          });
-        }
-      }
+  private handleConnectionClosed(sessionId: string, update: Partial<ConnectionState>) {
+    const error = update.lastDisconnect?.error as Boom;
+    const statusCode = error?.output?.statusCode;
+    const restartRequired = statusCode === DisconnectReason.restartRequired;
+
+    this.eventEmitter.emit('socket.connection.closed', {
+      sessionId,
+      reason: restartRequired ? 'unexpected' : 'logout',
+    });
+  }
+
+  private handleConnectionOpened(sessionId: string) {
+    this.eventEmitter.emit('socket.connection.opened', {
+      sessionId,
     });
   }
 }
