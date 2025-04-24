@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { WhatsAppService } from '../whatsapp/whatsapp.service';
 import { SessionService } from '../session/session.service';
+import { AuthenticationCreds } from '@whiskeysockets/baileys';
 
 @Injectable()
 export class IntegrationService {
@@ -35,6 +36,7 @@ export class IntegrationService {
   async handleRestartRequired(payload: { sessionId: string }) {
     try {
       console.log('Evento recebido no IntegrationService (Restart Required):', payload);
+      this.sessionService.restartSession(payload.sessionId);
       await this.whatsAppService.restart(payload.sessionId);
     } catch (error) {
       console.error(error);
@@ -68,8 +70,7 @@ export class IntegrationService {
     try {
       console.log('Evento recebido no IntegrationService (Connection Closed):', payload);
       await this.sessionService.closeSession(payload.sessionId, payload.reason);
-      if (payload.reason === 'logout')
-        await this.whatsAppService.delete(payload.sessionId);
+      if (payload.reason === 'logout') await this.whatsAppService.delete(payload.sessionId);
     } catch (error) {
       console.error(error);
     }
@@ -81,6 +82,20 @@ export class IntegrationService {
     try {
       console.log('Evento recebido no IntegrationService (Connection Opened):', payload);
       await this.sessionService.openSession(payload.sessionId);
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  @OnEvent('socket.creds.updated')
+  async handleCredsUpdated(payload: { sessionId: string, update: Partial<AuthenticationCreds>, creds: AuthenticationCreds }) {
+    try {
+      console.log('Evento recebido no IntegrationService (Creds Updated):', payload);
+      // Aqui você pode fazer algo com as credenciais atualizadas
+      const phone = payload.update.me?.id!;
+      const phonePlatform = payload.update.platform!;
+      await this.sessionService.updateCreds(payload.sessionId, phone, phonePlatform);
+      await this.whatsAppService.saveCreds(payload.sessionId, payload.creds);
     } catch (error) {
       console.error(error);
     }

@@ -42,8 +42,8 @@ export class SessionService {
     return { message: 'Session restarted!' };
   }
 
-  async updateCreds(sessionId: string, phone: string, phonePlatform: string, creds: AuthenticationCreds) {
-    await this.commandBus.execute(new UpdateSessionCredsCommand(sessionId, phone, phonePlatform, creds));
+  async updateCreds(sessionId: string, phone: string, phonePlatform: string) {
+    await this.commandBus.execute(new UpdateSessionCredsCommand(sessionId, phone, phonePlatform));
     return { message: 'Session credentials updated!' };
   }
 

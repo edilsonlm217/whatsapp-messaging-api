@@ -3,6 +3,7 @@ import { AuthStateService } from './auth-state/auth-state.service';
 import { BaileysService } from './baileys/baileys.service';
 import { SocketManagerService } from './socket-manager/socket-manager.service';
 import { BaileysEventsStore } from './baileys/store/baileys-events.store';
+import { AuthenticationCreds } from '@whiskeysockets/baileys';
 
 @Injectable()
 export class WhatsAppService {
@@ -44,6 +45,10 @@ export class WhatsAppService {
     await socket.logout();
     await this.authStateService.deleteAuthState(sessionId);
     this.socketManagerService.removeSocket(sessionId);
+  }
+
+  async saveCreds(sessionId: string, creds: AuthenticationCreds) {
+    await this.authStateService.saveCreds(sessionId, creds);
   }
 
   getCategoryStream() {

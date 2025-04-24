@@ -14,21 +14,29 @@ export class BaileysService {
 
   createSocket(sessionId: string, state: AuthenticationState): WASocket {
     const socket = makeWASocket({ printQRInTerminal: true, auth: state, qrTimeout: 20000 });
-    this.handleCredsUpdate(sessionId, socket);
+    this.handleCredsUpdate(sessionId, socket, state);
     this.handleConnectionUpdate(sessionId, socket);
     return socket;
   }
 
-  private async handleCredsUpdate(sessionId: string, socket: WASocket) {
+  private handleCredsUpdate(sessionId: string, socket: WASocket, state: AuthenticationState) {
     socket.ev.on('creds.update', async (update) => {
+      // Aqui você pode acessar o estado completo, atualizado
       await this.baileysEventsStore.append({
         sessionId: sessionId,
         type: BAILEYS_EVENTS.CREDS_UPDATED,
         aggregateId: sessionId,
-        payload: update,
+        payload: state.creds, // <- acessando o creds atualizado direto da referência original
+      });
+
+      this.eventEmitter.emit('socket.creds.updated', {
+        sessionId,
+        update,
+        creds: state.creds,
       });
     });
   }
+
 
   private async handleConnectionUpdate(sessionId: string, socket: WASocket) {
     socket.ev.on('connection.update', async (update) => {
