@@ -31,6 +31,29 @@ services:
       - esdata:/var/lib/eventstore
     restart: unless-stopped
 
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - ${REDIS_PORT}:6379
+    env_file: .env
+    command: >
+      redis-server
+      --port ${REDIS_PORT}
+      --requirepass ${REDIS_PASSWORD}
+      --user ${REDIS_USERNAME} on >${REDIS_PASSWORD} allcommands allkeys
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  redisinsight:
+    image: redis/redisinsight:latest
+    container_name: redisinsight
+    ports:
+      - 5540:5540  # Porta padrão do RedisInsight
+    restart: unless-stopped
+
 volumes:
   mongodb_data:
   esdata:
+  redis_data:
