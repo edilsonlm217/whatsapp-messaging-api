@@ -1,9 +1,8 @@
 import { Module } from '@nestjs/common';
 import { SessionStateService } from './session-state.service';
-import { StateStoreModule } from './state-store/state-store.module';
 
 @Module({
-  imports: [StateStoreModule],
+  imports: [],
   controllers: [],
   providers: [SessionStateService],
   exports: [SessionStateService]
