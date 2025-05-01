@@ -7,7 +7,6 @@ import {
   ConnectionClosedPayload,
   ConnectionLoggedOutPayload,
   ConnectionOpenedPayload,
-  CredsUpdatedPayload,
 } from 'src/common/session-events.interface';
 import { StructuredEvent } from 'src/common/structured-event.interface';
 import { AuthenticationCreds } from '@whiskeysockets/baileys';
@@ -50,7 +49,6 @@ export class SocketSessionSyncService {
       event.payload.me?.id ?? '',
       event.payload.platform ?? ''
     );
-    event.payload
     this.baileysSocketService.saveCreds(event.sessionId, event.payload);
   }
 }

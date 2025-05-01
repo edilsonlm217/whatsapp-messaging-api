@@ -14,7 +14,6 @@ export class SessionService {
     try {
       const sessionExists = await this.sessionStateService.getSessionState(sessionId);
       if (sessionExists) { throw new Error('Session already exists') }
-      await this.sessionStateService.createSessionState(sessionId);
       await this.baileysSocketService.create(sessionId);
     } catch (error) {
       console.error(error);
@@ -41,7 +40,7 @@ export class SessionService {
       await this.sessionStateService.restartSession(sessionId);
       await this.baileysSocketService.restart(sessionId);
     } catch (error) {
-      throw new Error('Failed to logout session.');
+      throw new Error('Failed to restart session.');
     }
   }
 
