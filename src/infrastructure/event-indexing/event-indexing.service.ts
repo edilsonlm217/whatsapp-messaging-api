@@ -1,13 +1,21 @@
 import { Injectable } from '@nestjs/common';
 import { StructuredEvent } from 'src/common/structured-event.interface';
+import { ElasticsearchService } from 'src/elasticsearch/elasticsearch.service';
 
 @Injectable()
 export class EventIndexingService {
+  constructor(private readonly elasticsearchService: ElasticsearchService) { }
 
-  // Lógica para enviar o evento para o Elasticsearch
-  async indexEvent(event: StructuredEvent<any>) {
-    console.log('Indexando evento no Elasticsearch', event);
-    // Aqui você implementaria a lógica de persistência no Elasticsearch
-    // Exemplo: this.client.index({ index: 'events', body: event });
+  // Método para indexar um evento no Elasticsearch
+  async indexEvent(event: StructuredEvent<any>): Promise<void> {
+    try {
+      await this.elasticsearchService.indexEvent('events', {
+        ...event,
+        '@timestamp': event.timestamp,
+      });
+
+    } catch (error) {
+      console.error('Erro ao indexar evento:', error);
+    }
   }
 }
