@@ -1,11 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SessionState } from './session-state.model';
 import { BehaviorSubject } from 'rxjs';
+import { EventEmitterService } from 'src/infrastructure/structured-event-emitter/event.emitter.service';
 
 @Injectable()
 export class SessionStateService {
   private sessionStateMap = new Map<string, SessionState>();
   private sessionStateSubjectMap = new Map<string, BehaviorSubject<SessionState>>();
+
+  constructor(private readonly eventEmitterService: EventEmitterService) { }
 
   // Recupera o estado da sessão
   async getSessionState(sessionId: string): Promise<SessionState | undefined> {
@@ -27,6 +30,13 @@ export class SessionStateService {
   private async set(sessionId: string, sessionState: SessionState): Promise<void> {
     this.sessionStateMap.set(sessionId, sessionState);
     this.sessionStateSubjectMap.get(sessionId)?.next(sessionState);
+    this.eventEmitterService.emitEvent<SessionState>(
+      sessionId,
+      'SessionState',
+      'session-state',
+      SessionStateService.name,
+      sessionState
+    );
   }
 
   // Atualiza o QR code no estado da sessão

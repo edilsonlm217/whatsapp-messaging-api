@@ -1,20 +1,32 @@
 import { Injectable } from '@nestjs/common';
-import { AuthenticationState, makeWASocket, WASocket } from '@whiskeysockets/baileys';
-import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AuthenticationCreds, AuthenticationState, ConnectionState, makeWASocket, WASocket } from '@whiskeysockets/baileys';
+import { EventEmitterService } from 'src/infrastructure/structured-event-emitter/event.emitter.service';
 
 @Injectable()
 export class BaileysService {
-  constructor(private readonly eventEmitter: EventEmitter2) { }
+  constructor(private readonly eventEmitterService: EventEmitterService) { }
 
   createSocket(sessionId: string, state: AuthenticationState): WASocket {
     const socket = makeWASocket({ auth: state, printQRInTerminal: true });
 
     socket.ev.on('connection.update', (update) => {
-      this.eventEmitter.emit('baileys.connection.update', { sessionId, update });
+      this.eventEmitterService.emitEvent<Partial<ConnectionState>>(
+        sessionId,
+        'ConnectionUpdate',
+        'baileys-socket',
+        BaileysService.name,
+        update
+      );
     });
 
-    socket.ev.on('creds.update', (update) => {
-      this.eventEmitter.emit('baileys.creds.update', { sessionId, update, creds: state.creds });
+    socket.ev.on('creds.update', () => {
+      this.eventEmitterService.emitEvent<AuthenticationCreds>(
+        sessionId,
+        'CredsUpdate',
+        'baileys-socket',
+        BaileysService.name,
+        socket.authState.creds
+      );
     });
 
     return socket;

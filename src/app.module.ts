@@ -4,6 +4,8 @@ import { EventEmitterModule } from '@nestjs/event-emitter';
 import { EventStoreModule } from './database/event-store/event-store.module';
 import { MongoModule } from './database/mongo/mongo.module';
 import { SessionModule } from './core/session/session.module';
+import { EventIndexingModule } from './infrastructure/event-indexing/event-indexing.module';
+import { StructuredEventEmitterModule } from './infrastructure/structured-event-emitter/structured-event-emitter.module';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { SessionModule } from './core/session/session.module';
     EventStoreModule,
     MongoModule,
     SessionModule,
+    StructuredEventEmitterModule,
+    EventIndexingModule,
   ],
   controllers: [],
   providers: [],
