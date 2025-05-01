@@ -1,4 +1,4 @@
-version: '3'
+version: '3.8'
 
 services:
   mongodb:
@@ -14,46 +14,35 @@ services:
       - mongodb_data:/data/db
     restart: unless-stopped
 
-  eventstore:
-    image: eventstore/eventstore:21.10.0-buster-slim
-    container_name: eventstore
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.19
+    container_name: elasticsearch
     environment:
-      - EVENTSTORE_INSECURE=true
-      - EVENTSTORE_ENABLE_ATOM_PUB_OVER_HTTP=true
-      - EVENTSTORE_RUN_PROJECTIONS=All
-      - EVENTSTORE_START_STANDARD_PROJECTIONS=true
-      - EVENTSTORE_EXT_TCP_PORT=1113
-      - EVENTSTORE_HTTP_PORT=2113
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
     ports:
-      - 2113:2113  # HTTP (dashboard e API REST)
-      - 1113:1113  # TCP gRPC
+      - "9200:9200"
     volumes:
-      - esdata:/var/lib/eventstore
+      - esdata:/usr/share/elasticsearch/data
     restart: unless-stopped
 
-  redis:
-    image: redis:7
-    container_name: redis
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.17.19
+    container_name: kibana
     ports:
-      - ${REDIS_PORT}:6379
-    env_file: .env
-    command: >
-      redis-server
-      --port ${REDIS_PORT}
-      --requirepass ${REDIS_PASSWORD}
-      --user ${REDIS_USERNAME} on >${REDIS_PASSWORD} allcommands allkeys
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
-
-  redisinsight:
-    image: redis/redisinsight:latest
-    container_name: redisinsight
-    ports:
-      - 5540:5540  # Porta padrão do RedisInsight
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
     restart: unless-stopped
 
 volumes:
   mongodb_data:
   esdata:
-  redis_data:
