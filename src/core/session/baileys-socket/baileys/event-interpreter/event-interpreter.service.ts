@@ -47,7 +47,7 @@ export class EventInterpreterService {
     if (event.payload.connection === 'close') {
       const error = event.payload.lastDisconnect?.error as Boom;
       const statusCode = error?.output?.statusCode;
-      const restartRequired = statusCode === DisconnectReason.restartRequired;
+      const restartRequired = statusCode !== DisconnectReason.loggedOut;
 
       if (restartRequired) {
         this.eventEmitterService.emitEvent<ConnectionClosedPayload>(
