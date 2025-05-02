@@ -14,6 +14,7 @@ import {
   ConnectionClosedPayload,
   ConnectionLoggedOutPayload,
   CredsUpdatedPayload,
+  ConnectionStartedPayload,
 } from 'src/common/session-events.interface';
 
 @Injectable()
@@ -31,6 +32,16 @@ export class EventInterpreterService {
         { qr: event.payload.qr }
       );
       return;
+    }
+
+    if (event.payload.connection === 'connecting') {
+      this.eventEmitterService.emitEvent<ConnectionStartedPayload>(
+        event.sessionId,
+        'ConnectionStarted',
+        'session',
+        EventInterpreterService.name,
+        { connection: 'connecting' }
+      );
     }
 
     if (event.payload.connection === 'open') {
@@ -71,7 +82,7 @@ export class EventInterpreterService {
 
   @OnEvent('CredsUpdate')
   async onCredsUpdate(event: StructuredEvent<AuthenticationCreds>) {
-    this.eventEmitterService.emitEvent<AuthenticationCreds>(
+    this.eventEmitterService.emitEvent<CredsUpdatedPayload>(
       event.sessionId,
       'CredsUpdated',
       'session',
