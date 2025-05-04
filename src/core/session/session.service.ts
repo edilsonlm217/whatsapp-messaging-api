@@ -11,7 +11,7 @@ export class SessionService {
 
   async createSession(sessionId: string) {
     const socketExists = await this.baileysSocketService.hasSocket(sessionId);
-    const sessionExists = await this.sessionStateService.getSessionState(sessionId);
+    const sessionExists = this.sessionStateService.getSessionState(sessionId);
 
     if (socketExists && sessionExists) { throw new Error('Session already exists') }
     if (socketExists && !sessionExists) { throw new Error('Active socket without session state') }
@@ -23,7 +23,7 @@ export class SessionService {
   // Faz o logout da sessão, desconectando e limpando o estado
   async logoutSession(sessionId: string) {
     const socketExists = await this.baileysSocketService.hasSocket(sessionId);
-    const sessionExists = await this.sessionStateService.getSessionState(sessionId);
+    const sessionExists = this.sessionStateService.getSessionState(sessionId);
 
     if (!socketExists && !sessionExists) { throw new Error('Session does not exist') }
     if (!socketExists && sessionExists) { throw new Error('Session exists but socket is missing') }
@@ -35,7 +35,7 @@ export class SessionService {
   // Faz o restart da sessão
   async restartSession(sessionId: string) {
     const socketExists = await this.baileysSocketService.hasSocket(sessionId);
-    const sessionExists = await this.sessionStateService.getSessionState(sessionId);
+    const sessionExists = this.sessionStateService.getSessionState(sessionId);
 
     if (!socketExists && !sessionExists) { throw new Error('Session does not exist') }
     if (!socketExists && sessionExists) { throw new Error('Session exists but socket is missing') }
@@ -47,7 +47,7 @@ export class SessionService {
 
   async observeSessionState(sessionId: string) {
     const socketExists = await this.baileysSocketService.hasSocket(sessionId);
-    const sessionExists = await this.sessionStateService.getSessionState(sessionId);
+    const sessionExists = this.sessionStateService.getSessionState(sessionId);
 
     if (!socketExists && !sessionExists) { throw new Error('Session does not exist') }
     if (!socketExists && sessionExists) { throw new Error('Session exists but socket is missing') }
