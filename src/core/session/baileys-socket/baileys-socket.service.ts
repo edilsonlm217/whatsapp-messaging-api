@@ -12,13 +12,17 @@ export class BaileysSocketService {
     private readonly baileysService: BaileysService,
   ) { }
 
-  async create(sessionId: string) {
+  async createSocket(sessionId: string) {
     const socketExists = this.socketManagerService.hasSocket(sessionId);
     if (socketExists) throw new Error('Socket already exists');
 
     const state = await this.authStateService.getAuthState(sessionId);
     const socket = this.baileysService.createSocket(sessionId, state);
     this.socketManagerService.addSocket(sessionId, socket);
+  }
+
+  async hasSocket(sessionId: string) {
+    return this.socketManagerService.hasSocket(sessionId);
   }
 
   async restart(sessionId: string) {

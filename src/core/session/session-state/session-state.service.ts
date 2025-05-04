@@ -8,18 +8,18 @@ import { Contact } from '@whiskeysockets/baileys';
 export class SessionStateService {
   constructor(private readonly stateManagerService: StateManagerService) { }
 
-  async getSessionState(sessionId: string): Promise<SessionState | undefined> {
+  getSessionState(sessionId: string) {
     return this.stateManagerService.get(sessionId);
   }
 
-  async updateQRCode(sessionId: string, qrCode: string): Promise<void> {
+  updateQRCode(sessionId: string, qrCode: string) {
     this.stateManagerService.update(sessionId, (state) => {
       state.qrCode = qrCode;
       state.lastUpdated = new Date();
     });
   }
 
-  async updateStatus(sessionId: string, status: SessionConnectionStatus): Promise<void> {
+  updateStatus(sessionId: string, status: SessionConnectionStatus) {
     this.stateManagerService.update(sessionId, (state) => {
       state.status = status;
       if (status === 'open') {
@@ -29,18 +29,14 @@ export class SessionStateService {
     });
   }
 
-  async updateCreds(
-    sessionId: string,
-    contact: Contact | undefined,
-    phonePlatform: string
-  ): Promise<void> {
+  updateCreds(sessionId: string, contact: Contact | undefined, phonePlatform: string) {
     this.stateManagerService.update(sessionId, (state) => {
       state.creds = { contact, phonePlatform };
       state.lastUpdated = new Date();
     });
   }
 
-  async restartSession(sessionId: string): Promise<void> {
+  restartSession(sessionId: string) {
     this.stateManagerService.update(sessionId, (state) => {
       state.status = 'connecting';
       state.qrCode = null;
@@ -49,11 +45,7 @@ export class SessionStateService {
     });
   }
 
-  getSessionStateSubject(sessionId: string): BehaviorSubject<SessionState> {
-    try {
-      return this.stateManagerService.getSubject(sessionId);
-    } catch {
-      throw new Error(`Session with ID ${sessionId} does not exist`);
-    }
+  getSessionStateSubject(sessionId: string) {
+    return this.stateManagerService.getSubject(sessionId);
   }
 }

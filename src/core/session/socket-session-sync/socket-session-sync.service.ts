@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { SessionStateService } from '../session-state/session-state.service';
 import { BaileysSocketService } from '../baileys-socket/baileys-socket.service';
+import { InconsistentStateEmitterService } from './services/inconsistent-state-emitter.service';
 import { StructuredEvent } from 'src/common/structured-event.interface';
 import {
   QrCodeGeneratedPayload,
@@ -15,45 +16,94 @@ import {
 export class SocketSessionSyncService {
   constructor(
     private readonly sessionStateService: SessionStateService,
-    private readonly baileysSocketService: BaileysSocketService
+    private readonly baileysSocketService: BaileysSocketService,
+    private readonly inconsistentStateEmitter: InconsistentStateEmitterService
   ) { }
 
-  @OnEvent('QrCodeGenerated', { async: true })
-  async handleQRCodeGenerated(event: StructuredEvent<QrCodeGeneratedPayload>) {
-    await this.sessionStateService.updateQRCode(event.sessionId, event.payload.qr);
+  @OnEvent('QrCodeGenerated')
+  handleQRCodeGenerated(event: StructuredEvent<QrCodeGeneratedPayload>) {
+    try {
+      this.sessionStateService.updateQRCode(event.sessionId, event.payload.qr);
+    } catch (error) {
+      this.inconsistentStateEmitter.emitInconsistentState(
+        event,
+        SocketSessionSyncService.name,
+        error
+      );
+    }
   }
 
   @OnEvent('ConnectionClosed', { async: true })
   async handleConnectionClosed(event: StructuredEvent<ConnectionClosedPayload>) {
-    await this.sessionStateService.updateStatus(event.sessionId, 'close');
-    await this.sessionStateService.restartSession(event.sessionId);
-    await this.baileysSocketService.restart(event.sessionId);
+    try {
+      this.sessionStateService.updateStatus(event.sessionId, 'close');
+      this.sessionStateService.restartSession(event.sessionId);
+      await this.baileysSocketService.restart(event.sessionId);
+    } catch (error) {
+      this.inconsistentStateEmitter.emitInconsistentState(
+        event,
+        SocketSessionSyncService.name,
+        error
+      );
+    }
   }
 
   @OnEvent('ConnectionLoggedOut', { async: true })
   async handleLoggedOut(event: StructuredEvent<ConnectionLoggedOutPayload>) {
-    await this.sessionStateService.updateStatus(event.sessionId, 'logged-out');
-    await this.baileysSocketService.deleteAuthState(event.sessionId);
-    this.baileysSocketService.disposeSocket(event.sessionId);
+    try {
+      this.sessionStateService.updateStatus(event.sessionId, 'logged-out');
+      await this.baileysSocketService.deleteAuthState(event.sessionId);
+      this.baileysSocketService.disposeSocket(event.sessionId);
+    } catch (error) {
+      this.inconsistentStateEmitter.emitInconsistentState(
+        event,
+        SocketSessionSyncService.name,
+        error
+      );
+    }
   }
 
-  @OnEvent('ConnectionOpened', { async: true })
-  async handleConnectionOpened(event: StructuredEvent<ConnectionOpenedPayload>) {
-    await this.sessionStateService.updateStatus(event.sessionId, 'open');
+  @OnEvent('ConnectionOpened')
+  handleConnectionOpened(event: StructuredEvent<ConnectionOpenedPayload>) {
+    try {
+      this.sessionStateService.updateStatus(event.sessionId, 'open');
+    } catch (error) {
+      this.inconsistentStateEmitter.emitInconsistentState(
+        event,
+        SocketSessionSyncService.name,
+        error
+      );
+    }
   }
 
-  @OnEvent('ConnectionStarted', { async: true })
-  async handleConnectionStarted(event: StructuredEvent<ConnectionOpenedPayload>) {
-    await this.sessionStateService.updateStatus(event.sessionId, 'connecting');
+  @OnEvent('ConnectionStarted')
+  handleConnectionStarted(event: StructuredEvent<ConnectionOpenedPayload>) {
+    try {
+      this.sessionStateService.updateStatus(event.sessionId, 'connecting');
+    } catch (error) {
+      this.inconsistentStateEmitter.emitInconsistentState(
+        event,
+        SocketSessionSyncService.name,
+        error
+      );
+    }
   }
 
   @OnEvent('CredsUpdated', { async: true })
   async handleCredsUpdated(event: StructuredEvent<CredsUpdatedPayload>) {
-    await this.sessionStateService.updateCreds(
-      event.sessionId,
-      event.payload.me,
-      event.payload.platform ?? ''
-    );
-    this.baileysSocketService.saveCreds(event.sessionId, event.payload);
+    try {
+      this.sessionStateService.updateCreds(
+        event.sessionId,
+        event.payload.me,
+        event.payload.platform ?? ''
+      );
+      await this.baileysSocketService.saveCreds(event.sessionId, event.payload);
+    } catch (error) {
+      this.inconsistentStateEmitter.emitInconsistentState(
+        event,
+        SocketSessionSyncService.name,
+        error
+      );
+    }
   }
 }

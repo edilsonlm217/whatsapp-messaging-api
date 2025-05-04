@@ -24,15 +24,11 @@ export class StateManagerService {
     return sessionState;
   }
 
-  getSubject(sessionId: string): BehaviorSubject<SessionState> {
-    const subject = this.sessionStateSubjectMap.get(sessionId);
-    if (!subject) {
-      throw new Error(`Subject for session ${sessionId} not found`);
-    }
-    return subject;
+  getSubject(sessionId: string) {
+    return this.sessionStateSubjectMap.get(sessionId);
   }
 
-  update(sessionId: string, updater: (state: SessionState) => void): void {
+  update(sessionId: string, updater: (state: SessionState) => void) {
     const sessionState = this.ensure(sessionId);
     updater(sessionState);
     sessionState.lastUpdated = new Date();

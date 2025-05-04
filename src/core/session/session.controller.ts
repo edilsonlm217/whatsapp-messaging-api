@@ -1,9 +1,11 @@
-import { Body, Controller, HttpCode, HttpStatus, MessageEvent, Param, Post, Sse } from "@nestjs/common";
-import { SessionService } from "./session.service";
+import { Body, Controller, HttpCode, HttpStatus, MessageEvent, Param, Post, Sse, UseFilters } from "@nestjs/common";
+import { map } from "rxjs/operators";
 import { Observable } from "rxjs";
-import { map } from "rxjs/operators";  // Adicionando a importação do map
+import { SessionService } from "./session.service";
+import { SessionExceptionFilter } from "./session-exception.filter";
 
 @Controller('sessions')
+@UseFilters(SessionExceptionFilter)
 export class SessionController {
   constructor(private readonly sessionService: SessionService) { }
 
@@ -35,8 +37,8 @@ export class SessionController {
   }
 
   @Sse(':sessionId/stream')
-  stream(@Param('sessionId') sessionId: string): Observable<MessageEvent> {
-    const sessionStateSubject = this.sessionService.observeSessionState(sessionId);
+  async stream(@Param('sessionId') sessionId: string) {
+    const sessionStateSubject = await this.sessionService.observeSessionState(sessionId);
 
     // Retorna o BehaviorSubject diretamente
     return sessionStateSubject.asObservable().pipe(

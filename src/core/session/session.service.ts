@@ -9,42 +9,52 @@ export class SessionService {
     private readonly sessionStateService: SessionStateService,
   ) { }
 
-  // Cria a sessão, criando o estado e iniciando o socket
   async createSession(sessionId: string) {
-    try {
-      const sessionExists = await this.sessionStateService.getSessionState(sessionId);
-      if (sessionExists) { throw new Error('Session already exists') }
-      await this.baileysSocketService.create(sessionId);
-    } catch (error) {
-      console.error(error);
-      throw new Error('Failed to create session.');
-    }
+    const socketExists = await this.baileysSocketService.hasSocket(sessionId);
+    const sessionExists = await this.sessionStateService.getSessionState(sessionId);
+
+    if (socketExists && sessionExists) { throw new Error('Session already exists') }
+    if (socketExists && !sessionExists) { throw new Error('Active socket without session state') }
+    if (!socketExists && sessionExists) { throw new Error('Session state exists without active socket') }
+
+    await this.baileysSocketService.createSocket(sessionId);
   }
 
   // Faz o logout da sessão, desconectando e limpando o estado
   async logoutSession(sessionId: string) {
-    try {
-      const sessionState = await this.sessionStateService.getSessionState(sessionId);
-      if (!sessionState) { throw new Error(`Session ${sessionId} does not exist.`) }
-      await this.baileysSocketService.logout(sessionId);
-    } catch (error) {
-      throw new Error('Failed to logout session.');
-    }
+    const socketExists = await this.baileysSocketService.hasSocket(sessionId);
+    const sessionExists = await this.sessionStateService.getSessionState(sessionId);
+
+    if (!socketExists && !sessionExists) { throw new Error('Session does not exist') }
+    if (!socketExists && sessionExists) { throw new Error('Session exists but socket is missing') }
+    if (socketExists && !sessionExists) { throw new Error('Socket exists but session state is missing') }
+
+    await this.baileysSocketService.logout(sessionId);
   }
 
   // Faz o restart da sessão
   async restartSession(sessionId: string) {
-    try {
-      const sessionState = await this.sessionStateService.getSessionState(sessionId);
-      if (!sessionState) { throw new Error(`Session ${sessionId} does not exist.`) }
-      await this.sessionStateService.restartSession(sessionId);
-      await this.baileysSocketService.restart(sessionId);
-    } catch (error) {
-      throw new Error('Failed to restart session.');
-    }
+    const socketExists = await this.baileysSocketService.hasSocket(sessionId);
+    const sessionExists = await this.sessionStateService.getSessionState(sessionId);
+
+    if (!socketExists && !sessionExists) { throw new Error('Session does not exist') }
+    if (!socketExists && sessionExists) { throw new Error('Session exists but socket is missing') }
+    if (socketExists && !sessionExists) { throw new Error('Socket exists but session state is missing') }
+
+    await this.sessionStateService.restartSession(sessionId);
+    await this.baileysSocketService.restart(sessionId);
   }
 
-  observeSessionState(sessionId: string) {
-    return this.sessionStateService.getSessionStateSubject(sessionId);
+  async observeSessionState(sessionId: string) {
+    const socketExists = await this.baileysSocketService.hasSocket(sessionId);
+    const sessionExists = await this.sessionStateService.getSessionState(sessionId);
+
+    if (!socketExists && !sessionExists) { throw new Error('Session does not exist') }
+    if (!socketExists && sessionExists) { throw new Error('Session exists but socket is missing') }
+    if (socketExists && !sessionExists) { throw new Error('Socket exists but session state is missing') }
+
+    const subject = this.sessionStateService.getSessionStateSubject(sessionId);
+    if (!subject) { throw new Error('Session state stream not found') }
+    return subject;
   }
 }

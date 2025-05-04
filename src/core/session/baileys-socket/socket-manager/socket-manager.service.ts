@@ -13,7 +13,7 @@ export class SocketManagerService {
   }
 
   // Recupera um socket específico
-  getSocket(sessionId: string): WASocket | undefined {
+  getSocket(sessionId: string) {
     return this.socketsMap.get(sessionId);
   }
 
