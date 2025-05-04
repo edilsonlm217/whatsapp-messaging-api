@@ -41,7 +41,7 @@ export class SessionService {
     if (!socketExists && sessionExists) { throw new Error('Session exists but socket is missing') }
     if (socketExists && !sessionExists) { throw new Error('Socket exists but session state is missing') }
 
-    await this.sessionStateService.restartSession(sessionId);
+    this.sessionStateService.restartSession(sessionId);
     await this.baileysSocketService.restart(sessionId);
   }
 
