@@ -12,7 +12,6 @@ export class ElasticsearchService {
         index,   // Nome do índice
         body: event, // Dados do evento
       });
-      console.log('Evento indexado com sucesso!');
     } catch (error) {
       console.error('Erro ao indexar evento:', error);
     }

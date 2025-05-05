@@ -10,7 +10,6 @@ export class SessionStateListener {
 
   @OnEvent('SessionState', { async: true })
   async onSessionStateUpdate(event: StructuredEvent<SessionState>) {
-    console.log('SessionState update event', event.payload);
     await this.indexingService.indexEvent(event);
   }
 }

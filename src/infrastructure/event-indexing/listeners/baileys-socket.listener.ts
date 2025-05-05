@@ -10,13 +10,11 @@ export class BaileysSocketListener {
 
   @OnEvent('ConnectionUpdate', { async: true })
   async onConnectionUpdate(event: StructuredEvent<ConnectionState>) {
-    console.log('Connection update event', event);
     await this.indexingService.indexEvent(event);
   }
 
   @OnEvent('CredsUpdate', { async: true })
   async onCredsUpdate(event: StructuredEvent<AuthenticationCreds>) {
-    console.log('Creds update event', event);
     await this.indexingService.indexEvent(event);
   }
 }
