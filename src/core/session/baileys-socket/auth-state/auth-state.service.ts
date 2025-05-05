@@ -30,4 +30,8 @@ export class AuthStateService {
     await this.keysService.deleteKeys(sessionId);
     console.log(`Credenciais e chaves da sessão ${sessionId} removidas.`);
   }
+
+  public async listSessionIds() {
+    return this.credsService.listSessionIds();
+  }
 }

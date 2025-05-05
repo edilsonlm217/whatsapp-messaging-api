@@ -48,4 +48,18 @@ export class CredsRepository {
       Logger.error(`Erro ao remover credenciais do MongoDB para o arquivo ${file}: ${error.message}`);
     }
   }
+
+  async listSessionIds(): Promise<string[]> {
+    try {
+      const cursor = this.credsCollection.find({}, { projection: { file: 1 } });
+      const files = await cursor.toArray();
+      return files
+        .map((doc) => doc.file)
+        .filter((file) => typeof file === 'string' && file.endsWith('-creds.json'))
+        .map((file) => file.replace('-creds.json', ''));
+    } catch (error) {
+      Logger.error(`Erro ao listar sessionIds: ${error.message}`);
+      return [];
+    }
+  }
 }

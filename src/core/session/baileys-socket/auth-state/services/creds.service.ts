@@ -17,4 +17,8 @@ export class CredsService {
   public async deleteCreds(sessionId: string): Promise<void> {
     await this.credsRepository.removeCreds(`${sessionId}-creds.json`);
   }
+
+  public async listSessionIds() {
+    return this.credsRepository.listSessionIds();
+  }
 }

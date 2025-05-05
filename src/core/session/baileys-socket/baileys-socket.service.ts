@@ -1,16 +1,28 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { AuthenticationCreds } from '@whiskeysockets/baileys';
 import { SocketManagerService } from './socket-manager/socket-manager.service';
 import { AuthStateService } from './auth-state/auth-state.service';
 import { BaileysService } from './baileys/baileys.service';
 
 @Injectable()
-export class BaileysSocketService {
+export class BaileysSocketService implements OnModuleInit {
   constructor(
     private readonly socketManagerService: SocketManagerService,
     private readonly authStateService: AuthStateService,
     private readonly baileysService: BaileysService,
   ) { }
+
+  async onModuleInit() {
+    const sessionIds = await this.authStateService.listSessionIds();
+
+    for (const sessionId of sessionIds) {
+      try {
+        await this.createSocket(sessionId);
+      } catch (error) {
+        console.error(`Falha ao restaurar sessão ${sessionId}: ${error.message}`);
+      }
+    }
+  }
 
   async createSocket(sessionId: string) {
     const socketExists = this.socketManagerService.hasSocket(sessionId);
