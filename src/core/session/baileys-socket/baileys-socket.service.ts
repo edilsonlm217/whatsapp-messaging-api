@@ -65,4 +65,16 @@ export class BaileysSocketService implements OnModuleInit {
   async saveCreds(sessionId: string, creds: AuthenticationCreds) {
     await this.authStateService.saveCreds(sessionId, creds);
   }
+
+  async sendMessage(sessionId: string, to: string, message: string) {
+    const socket = this.socketManagerService.getSocket(sessionId);
+    if (!socket) throw new Error('Socket does not exist');
+
+    const jid = this.toJid(to);
+    return socket.sendMessage(jid, { text: message });
+  }
+
+  private toJid(to: string): string {
+    return to.includes('@') ? to : `${to}@s.whatsapp.net`;
+  }
 }

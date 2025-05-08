@@ -45,6 +45,17 @@ export class SessionService {
     await this.baileysSocketService.restart(sessionId);
   }
 
+  async sendMessage(sessionId: string, to: string, message: string) {
+    const socketExists = await this.baileysSocketService.hasSocket(sessionId);
+    const sessionExists = this.sessionStateService.getSessionState(sessionId);
+
+    if (!socketExists && !sessionExists) { throw new Error('Session does not exist') }
+    if (!socketExists && sessionExists) { throw new Error('Session exists but socket is missing') }
+    if (socketExists && !sessionExists) { throw new Error('Socket exists but session state is missing') }
+
+    return this.baileysSocketService.sendMessage(sessionId, to, message);
+  }
+
   async observeSessionState(sessionId: string) {
     const socketExists = await this.baileysSocketService.hasSocket(sessionId);
     const sessionExists = this.sessionStateService.getSessionState(sessionId);
