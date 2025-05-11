@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Db, Collection } from 'mongodb';
 import { Inject } from '@nestjs/common';
-import { BufferJSON } from '@whiskeysockets/baileys';
 
 @Injectable()
 export class KeysRepository {
@@ -11,46 +10,45 @@ export class KeysRepository {
     this.keysCollection = this.db.collection('keys');
   }
 
-  // Função para escrever chave no MongoDB
-  async writeKey(key: any, file: string): Promise<void> {
+  // Função para escrever chave no MongoDB com campos isolados
+  async writeKey(sessionId: string, category: string, id: string, keyData: any): Promise<void> {
     try {
       await this.keysCollection.updateOne(
-        { file },
-        { $set: { data: JSON.stringify(key, BufferJSON.replacer) } },
-        { upsert: true }
+        { sessionId, category, id },  // Usando sessionId, category e id isolados
+        { $set: { keyData } },  // Apenas os dados binários, sem JSON.stringify
+        { upsert: true }  // Cria se não existir, atualiza se já existir
       );
     } catch (error) {
-      Logger.error(`Error writing key to MongoDB for file ${file}: ${error.message}`);
+      Logger.error(`Error writing key to MongoDB for session ${sessionId}, category ${category}, id ${id}: ${error.message}`);
     }
   }
 
-  // Função para ler chave do MongoDB
-  async readKey(file: string): Promise<any> {
+  // Função para ler chave do MongoDB com base nos campos isolados
+  async readKey(sessionId: string, category: string, id: string): Promise<any> {
     try {
-      const result = await this.keysCollection.findOne({ file });
-      return result ? JSON.parse(result.data, BufferJSON.reviver) : null;
+      const result = await this.keysCollection.findOne({ sessionId, category, id });
+      return result ? result.keyData : null;  // Retorna os dados binários diretamente
     } catch (error) {
-      Logger.error(`Error reading key from MongoDB for file ${file}: ${error.message}`);
+      Logger.error(`Error reading key from MongoDB for session ${sessionId}, category ${category}, id ${id}: ${error.message}`);
       return null;
     }
   }
 
-  // Função para remover chave do MongoDB
-  async removeKey(file: string): Promise<void> {
+  // Função para remover chave do MongoDB com base nos campos isolados
+  async removeKey(sessionId: string, category: string, id: string): Promise<void> {
     try {
-      await this.keysCollection.deleteOne({ file });
+      await this.keysCollection.deleteOne({ sessionId, category, id });
     } catch (error) {
-      Logger.error(`Error removing key from MongoDB for file ${file}: ${error.message}`);
+      Logger.error(`Error removing key from MongoDB for session ${sessionId}, category ${category}, id ${id}: ${error.message}`);
     }
   }
 
+  // Função para listar chaves de um sessionId
   async listKeys(sessionId: string): Promise<string[]> {
     try {
-      // Procura todos os arquivos que começam com o sessionId
-      const regexPattern = `^${sessionId}-.*\\.json$`; // Todos os arquivos que começam com o sessionId
-      const cursor = this.keysCollection.find({ file: { $regex: regexPattern } });
+      const cursor = this.keysCollection.find({ sessionId });
       const results = await cursor.toArray();
-      return results.map((doc) => doc.file);
+      return results.map((doc) => `${doc.category}-${doc.id}`);  // Retorna as combinações de category e id
     } catch (error) {
       Logger.error(`Error listing keys from MongoDB for sessionId ${sessionId}: ${error.message}`);
       return [];
