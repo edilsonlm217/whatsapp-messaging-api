@@ -1,18 +1,41 @@
 version: '3.8'
 
 services:
+  app:
+    container_name: whatsapp-messaging-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    env_file: .env
+    ports:
+      - '3000:3000'
+    restart: always
+    depends_on:
+      - mongodb
+    networks:
+      - whatsapp_messaging_network
+      - internal_network
+
   mongodb:
     image: mongo
-    container_name: database
+    container_name: mongodb
     ports:
-      - ${MONGODB_PORT}:27017
+      - '27017:27017'
     env_file: .env
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
     volumes:
       - mongodb_data:/data/db
-    restart: unless-stopped
+    restart: always
+    networks:
+      - whatsapp_messaging_network
 
 volumes:
   mongodb_data:
+
+networks:
+  whatsapp_messaging_network:
+    driver: bridge
+  internal_network:
+    external: true
