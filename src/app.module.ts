@@ -6,6 +6,7 @@ import { MongoModule } from './database/mongo/mongo.module';
 import { SessionModule } from './core/session/session.module';
 import { EventIndexingModule } from './infrastructure/event-indexing/event-indexing.module';
 import { StructuredEventEmitterModule } from './infrastructure/structured-event-emitter/structured-event-emitter.module';
+import { MessageModule } from './core/message/message.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { StructuredEventEmitterModule } from './infrastructure/structured-event-
     EventStoreModule,
     MongoModule,
     SessionModule,
+    MessageModule,
     StructuredEventEmitterModule,
     EventIndexingModule,
   ],

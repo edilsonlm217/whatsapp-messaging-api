@@ -37,6 +37,10 @@ export class BaileysSocketService implements OnModuleInit {
     return this.socketManagerService.hasSocket(sessionId);
   }
 
+  getSocket(sessionId: string) {
+    return this.socketManagerService.getSocket(sessionId);
+  }
+
   async restart(sessionId: string) {
     const socketExists = this.socketManagerService.hasSocket(sessionId);
     if (!socketExists) throw new Error('Socket does not exist');
