@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Client } from '@elastic/elasticsearch'; // Importando o cliente oficial do Elasticsearch
 import { ElasticsearchService } from './elasticsearch.service';
 
@@ -6,12 +7,12 @@ import { ElasticsearchService } from './elasticsearch.service';
   providers: [
     {
       provide: Client,  // Injetando o cliente diretamente
-      useFactory: () => {
+      useFactory: (configService: ConfigService) => {
         return new Client({
-          node: 'http://localhost:9200', // URL do Elasticsearch
-          // Você pode adicionar mais configurações aqui, caso necessário
+          node: configService.get<string>('ELASTICSEARCH_NODE'), // Usando variável de ambiente
         });
       },
+      inject: [ConfigService],  // Injetando o ConfigService para acessar as variáveis de ambiente
     },
     ElasticsearchService, // Seu serviço que vai usar o cliente
   ],
