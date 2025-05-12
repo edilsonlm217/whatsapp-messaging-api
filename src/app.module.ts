@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { EventStoreModule } from './database/event-store/event-store.module';
 import { MongoModule } from './database/mongo/mongo.module';
 import { SessionModule } from './core/session/session.module';
 import { EventIndexingModule } from './infrastructure/event-indexing/event-indexing.module';
@@ -12,7 +11,6 @@ import { MessageModule } from './core/message/message.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
     EventEmitterModule.forRoot(),
-    EventStoreModule,
     MongoModule,
     SessionModule,
     MessageModule,
