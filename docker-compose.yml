@@ -12,7 +12,6 @@ services:
     depends_on:
       - mongodb
     networks:
-      - whatsapp_messaging_network
       - internal_network
 
   mongodb:
@@ -27,13 +26,11 @@ services:
       - mongodb_data:/data/db
     restart: always
     networks:
-      - whatsapp_messaging_network
+      - internal_network
 
 volumes:
   mongodb_data:
 
 networks:
-  whatsapp_messaging_network:
-    driver: bridge
   internal_network:
     external: true
