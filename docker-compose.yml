@@ -11,6 +11,14 @@ services:
     restart: always
     depends_on:
       - mongodb
+    environment:
+      - APP_PORT=${APP_PORT}
+      - MONGODB_HOST=${MONGODB_HOST}
+      - MONGODB_PORT=${MONGODB_PORT}
+      - MONGODB_DATABASE=${MONGODB_DATABASE}
+      - MONGODB_USERNAME=${MONGODB_USERNAME}
+      - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+      - ELASTICSEARCH_NODE=${ELASTICSEARCH_NODE}
     networks:
       - internal_network
 
