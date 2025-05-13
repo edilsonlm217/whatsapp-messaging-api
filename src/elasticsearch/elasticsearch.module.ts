@@ -8,6 +8,8 @@ import { ElasticsearchService } from './elasticsearch.service';
     {
       provide: Client,  // Injetando o cliente diretamente
       useFactory: (configService: ConfigService) => {
+        const node = configService.get<string>('ELASTICSEARCH_NODE');
+        console.log(node);
         return new Client({
           node: configService.get<string>('ELASTICSEARCH_NODE'), // Usando variável de ambiente
         });
