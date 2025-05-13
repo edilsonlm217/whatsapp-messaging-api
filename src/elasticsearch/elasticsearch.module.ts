@@ -10,6 +10,7 @@ import { ElasticsearchService } from './elasticsearch.service';
       useFactory: (configService: ConfigService) => {
         const node = configService.get<string>('APP_PORT');
         console.log(node);
+        console.log(process.env);
         return new Client({
           node: configService.get<string>('ELASTICSEARCH_NODE'), // Usando variável de ambiente
         });
