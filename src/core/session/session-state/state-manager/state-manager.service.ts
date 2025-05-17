@@ -46,4 +46,15 @@ export class StateManagerService {
       sessionState
     );
   }
+
+  /** Remove o estado e o subject associados à sessão */
+  remove(sessionId: string): void {
+    this.sessionStateMap.delete(sessionId);
+
+    const subject = this.sessionStateSubjectMap.get(sessionId);
+    if (subject) {
+      subject.complete(); // Encerra o fluxo de eventos para quem estiver inscrito
+      this.sessionStateSubjectMap.delete(sessionId);
+    }
+  }
 }
