@@ -1,7 +1,10 @@
-import { Body, Controller, HttpCode, HttpStatus, Param, Post, Sse, UseFilters } from "@nestjs/common";
-import { map } from "rxjs/operators";
+import { Body, Controller, HttpCode, HttpStatus, Param, Post, Sse, UseFilters, UsePipes, ValidationPipe } from "@nestjs/common";
 import { SessionService } from "./session.service";
 import { SessionExceptionFilter } from "./session-exception.filter";
+import { Observable } from "rxjs";
+import { CreateSessionDto } from "src/common/create-session.dto";
+import { CreateSessionResponse } from "src/common/create-session-response.interface";
+import { SessionIdDto } from "src/common/session-id.dto";
 
 @Controller('sessions')
 @UseFilters(SessionExceptionFilter)
@@ -10,14 +13,13 @@ export class SessionController {
 
   @Post()
   @HttpCode(HttpStatus.ACCEPTED)
-  async create(@Body() body: { sessionId: string }) {
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  async create(@Body() body: CreateSessionDto): Promise<CreateSessionResponse> {
     await this.sessionService.createSession(body.sessionId);
 
     return {
       message: 'Session creation process started',
-      sessionId: body.sessionId,
-      status: 'pending',
-      timestamp: new Date().toISOString(),
+      sessionId: body.sessionId
     };
   }
 
@@ -30,23 +32,32 @@ export class SessionController {
     return {
       message: 'Logout process initiated',
       sessionId,
-      status: 'pending',  // Indica que o processo de logout foi iniciado
-      timestamp: new Date().toISOString(),
     };
   }
 
   @Sse(':sessionId/stream')
-  async stream(@Param('sessionId') sessionId: string) {
-    const sessionStateSubject = await this.sessionService.observeSessionState(sessionId);
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async stream(@Param() params: SessionIdDto) {
+    const sessionStateSubject = await this.sessionService.observeSessionState(params.sessionId);
 
-    // Retorna o BehaviorSubject diretamente
-    return sessionStateSubject.asObservable().pipe(
-      // Enviando os dados no formato esperado para SSE
-      map(state => ({
-        data: {
-          ...state
-        }
-      }))
-    );
+    return new Observable((subscriber) => {
+      const subscription = sessionStateSubject.subscribe({
+        next: (state) => {
+          if (state.status === 'qr-timeout' || state.status === 'logged-out') {
+            subscriber.next({ data: { state, type: 'end' } });
+            subscriber.complete();
+          } else {
+            subscriber.next({ data: { state, type: 'update' } });
+          }
+        },
+        error: (err) => subscriber.error(err),
+        complete: () => subscriber.complete() // <- encerra o SSE
+      });
+
+      subscriber.add(() => {
+        console.log(`Cliente desconectado da sessão ${params.sessionId}`);
+        subscription.unsubscribe();
+      });
+    });
   }
 }
