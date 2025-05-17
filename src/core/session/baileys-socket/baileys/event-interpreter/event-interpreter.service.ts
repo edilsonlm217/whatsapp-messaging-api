@@ -58,7 +58,20 @@ export class EventInterpreterService {
     if (event.payload.connection === 'close') {
       const error = event.payload.lastDisconnect?.error as Boom;
       const statusCode = error?.output?.statusCode;
+      const message = error?.output?.payload?.message ?? '';
       const restartRequired = statusCode !== DisconnectReason.loggedOut;
+
+      const isQrTimeout = statusCode === 408 && message === 'QR refs attempts ended';
+      if (isQrTimeout) {
+        this.eventEmitterService.emitEvent<ConnectionClosedPayload>(
+          event.sessionId,
+          'QrCodeTimeout',
+          'session',
+          EventInterpreterService.name,
+          { connection: 'close' }
+        );
+        return;
+      }
 
       if (restartRequired) {
         this.eventEmitterService.emitEvent<ConnectionClosedPayload>(
