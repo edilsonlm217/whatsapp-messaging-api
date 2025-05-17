@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { SessionState, SessionConnectionStatus } from './session-state.model';
-import { BehaviorSubject } from 'rxjs';
+import { SessionConnectionStatus } from './session-state.model';
 import { StateManagerService } from './state-manager/state-manager.service';
 import { Contact } from '@whiskeysockets/baileys';
 
@@ -22,7 +21,7 @@ export class SessionStateService {
   updateStatus(sessionId: string, status: SessionConnectionStatus) {
     this.stateManagerService.update(sessionId, (state) => {
       state.status = status;
-      if (status === 'open') {
+      if (status === 'open' || status === 'qr-timeout') {
         state.qrCode = null; // QR não é mais necessário após conexão aberta
       }
       state.lastUpdated = new Date();
@@ -43,6 +42,11 @@ export class SessionStateService {
       state.creds = null;
       state.lastUpdated = new Date();
     });
+  }
+
+  /** Remove completamente o estado e subject da sessão */
+  clearSessionState(sessionId: string) {
+    this.stateManagerService.remove(sessionId);
   }
 
   getSessionStateSubject(sessionId: string) {
