@@ -1,15 +1,16 @@
 import { Contact } from '@whiskeysockets/baileys';
 
-export type SessionConnectionStatus = 'connecting' | 'open' | 'close' | 'logged-out';
+export type SessionConnectionStatus = 'connecting' | 'open' | 'close' | 'logged-out' | 'qr-timeout';
 
+export interface SessionCreds {
+  contact?: Contact;
+  phonePlatform?: string;
+}
 export class SessionState {
   sessionId: string;
   status: SessionConnectionStatus;
   qrCode: string | null;
-  creds: {
-    contact?: Contact;
-    phonePlatform?: string;
-  } | null;
+  creds: SessionCreds | null;
   lastUpdated: Date;
 
   constructor(sessionId: string) {
