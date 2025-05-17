@@ -29,6 +29,8 @@
     "@nestjs/event-emitter": "^3.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@whiskeysockets/baileys": "^6.7.16",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
     "dotenv": "^16.4.7",
     "mongodb": "^6.14.2",
     "redis": "^4.7.0",
@@ -80,5 +82,6 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
 }
