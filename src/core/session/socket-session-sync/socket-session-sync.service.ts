@@ -33,6 +33,21 @@ export class SocketSessionSyncService {
     }
   }
 
+  @OnEvent('QrCodeTimeout')
+  handleQrCodeTimeout(event: StructuredEvent<ConnectionClosedPayload>) {
+    try {
+      this.sessionStateService.updateStatus(event.sessionId, 'qr-timeout');
+      this.sessionStateService.clearSessionState(event.sessionId);
+      this.baileysSocketService.disposeSocket(event.sessionId);
+    } catch (error) {
+      this.inconsistentStateEmitter.emitInconsistentState(
+        event,
+        SocketSessionSyncService.name,
+        error
+      );
+    }
+  }
+
   @OnEvent('ConnectionClosed', { async: true })
   async handleConnectionClosed(event: StructuredEvent<ConnectionClosedPayload>) {
     try {
@@ -54,6 +69,7 @@ export class SocketSessionSyncService {
       this.sessionStateService.updateStatus(event.sessionId, 'logged-out');
       await this.baileysSocketService.deleteAuthState(event.sessionId);
       this.baileysSocketService.disposeSocket(event.sessionId);
+      this.sessionStateService.clearSessionState(event.sessionId);
     } catch (error) {
       this.inconsistentStateEmitter.emitInconsistentState(
         event,
