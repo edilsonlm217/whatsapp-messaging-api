@@ -1,4 +1,10 @@
-import { ExceptionFilter, Catch, ArgumentsHost, HttpStatus } from '@nestjs/common';
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpStatus,
+  BadRequestException,
+} from '@nestjs/common';
 import { Response } from 'express';
 
 @Catch(Error)
@@ -6,6 +12,25 @@ export class SessionExceptionFilter implements ExceptionFilter {
   catch(exception: Error, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+
+    // Tratamento de erro de validação
+    if (exception instanceof BadRequestException) {
+      const status = exception.getStatus();
+      const exceptionResponse = exception.getResponse();
+
+      const validationErrors =
+        typeof exceptionResponse === 'object' && 'message' in exceptionResponse
+          ? (exceptionResponse as any).message
+          : exception.message;
+
+      response.status(status).json({
+        statusCode: status,
+        error: 'Erro de validação nos dados enviados',
+        details: validationErrors,
+      });
+
+      return;
+    }
 
     // Mapeamento de mensagens específicas para status
     const message = exception.message;
