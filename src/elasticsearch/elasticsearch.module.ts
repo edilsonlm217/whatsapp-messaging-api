@@ -6,16 +6,20 @@ import { ElasticsearchService } from './elasticsearch.service';
 @Module({
   providers: [
     {
-      provide: Client,  // Injetando o cliente diretamente
+      provide: Client,
       useFactory: (configService: ConfigService) => {
         return new Client({
-          node: configService.get<string>('ELASTICSEARCH_NODE'), // Usando variável de ambiente
+          node: configService.get<string>('ELASTICSEARCH_NODE'),
+          headers: {
+            'Content-Type': 'application/json',
+          },
         });
       },
-      inject: [ConfigService],  // Injetando o ConfigService para acessar as variáveis de ambiente
+      inject: [ConfigService],
     },
-    ElasticsearchService, // Seu serviço que vai usar o cliente
+    ElasticsearchService,
   ],
-  exports: [ElasticsearchService],  // Exportando o serviço para outros módulos
+  exports: [ElasticsearchService],
 })
 export class ElasticsearchModule { }
+
