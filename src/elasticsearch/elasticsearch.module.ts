@@ -9,10 +9,7 @@ import { ElasticsearchService } from './elasticsearch.service';
       provide: Client,
       useFactory: (configService: ConfigService) => {
         return new Client({
-          node: configService.get<string>('ELASTICSEARCH_NODE'),
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          node: configService.get<string>('ELASTICSEARCH_NODE')
         });
       },
       inject: [ConfigService],
