@@ -73,6 +73,18 @@ export class EventInterpreterService {
         return;
       }
 
+      const isIntentionalLogout = statusCode === 401 && message === 'Intentional Logout';
+      if (isIntentionalLogout) {
+        this.eventEmitterService.emitEvent<ConnectionLoggedOutPayload>(
+          event.sessionId,
+          'ConnectionLoggedOut',
+          'session',
+          EventInterpreterService.name,
+          { connection: 'logged-out' }
+        );
+        return;
+      }
+
       if (restartRequired) {
         this.eventEmitterService.emitEvent<ConnectionClosedPayload>(
           event.sessionId,
