@@ -40,7 +40,6 @@ export class SessionStateService {
     this.stateManagerService.update(sessionId, (state) => {
       state.status = 'restarting';
       state.qrCode = null;
-      state.creds = null;
       state.lastUpdated = new Date();
     });
   }
