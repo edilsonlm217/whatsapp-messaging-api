@@ -13,6 +13,7 @@ export class SessionStateService {
 
   updateQRCode(sessionId: string, qrCode: string) {
     this.stateManagerService.update(sessionId, (state) => {
+      state.status = 'awaiting-qr-code-reading'
       state.qrCode = qrCode;
       state.lastUpdated = new Date();
     });
@@ -37,7 +38,7 @@ export class SessionStateService {
 
   restartSession(sessionId: string) {
     this.stateManagerService.update(sessionId, (state) => {
-      state.status = 'connecting';
+      state.status = 'restarting';
       state.qrCode = null;
       state.creds = null;
       state.lastUpdated = new Date();

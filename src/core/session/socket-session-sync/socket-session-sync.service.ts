@@ -95,7 +95,7 @@ export class SocketSessionSyncService {
   @OnEvent('ConnectionStarted')
   handleConnectionStarted(event: StructuredEvent<ConnectionOpenedPayload>) {
     try {
-      this.sessionStateService.updateStatus(event.sessionId, 'connecting');
+      this.sessionStateService.updateStatus(event.sessionId, 'starting');
     } catch (error) {
       this.inconsistentStateEmitter.emitInconsistentState(
         event,

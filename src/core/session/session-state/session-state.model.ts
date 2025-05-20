@@ -1,6 +1,6 @@
 import { Contact } from '@whiskeysockets/baileys';
 
-export type SessionConnectionStatus = 'connecting' | 'open' | 'close' | 'logged-out' | 'qr-timeout';
+export type SessionConnectionStatus = 'starting' | 'awaiting-qr-code-reading' | 'qr-timeout' | 'close' | 'restarting' | 'open' | 'logged-out';
 
 export interface SessionCreds {
   contact?: Contact;
@@ -15,7 +15,7 @@ export class SessionState {
 
   constructor(sessionId: string) {
     this.sessionId = sessionId;
-    this.status = 'connecting'; // inicial
+    this.status = 'starting'
     this.qrCode = null;
     this.creds = null;
     this.lastUpdated = new Date();
