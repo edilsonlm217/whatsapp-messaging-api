@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    container_name: whatsapp-api-staging
+    container_name: whatsapp-api
     build:
       context: .
       dockerfile: Dockerfile
