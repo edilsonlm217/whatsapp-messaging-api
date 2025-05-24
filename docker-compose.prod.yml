@@ -6,8 +6,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "${APP_PORT}:${APP_PORT}"
     restart: always
     depends_on:
       - mongodb
@@ -24,9 +22,7 @@ services:
 
   mongodb:
     image: mongo
-    container_name: mongodb-prod
-    ports:
-      - "${MONGODB_PORT}:${MONGODB_PORT}"
+    container_name: api-database-prod
     environment:
       - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME}
       - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
