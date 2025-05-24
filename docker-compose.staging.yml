@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    container_name: whatsapp-api-staging
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    restart: always
+    depends_on:
+      - mongodb
+    environment:
+      - APP_PORT=${APP_PORT}
+      - MONGODB_HOST=${MONGODB_HOST}
+      - MONGODB_PORT=${MONGODB_PORT}
+      - MONGODB_DATABASE=${MONGODB_DATABASE}
+      - MONGODB_USERNAME=${MONGODB_USERNAME}
+      - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+      - ELASTICSEARCH_NODE=${ELASTICSEARCH_NODE}
+    networks:
+      - internal_network
+
+  mongodb:
+    image: mongo
+    container_name: mongodb-staging
+    ports:
+      - "${MONGODB_PORT}:${MONGODB_PORT}"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
+    volumes:
+      - mongodb_data:/data/db
+    restart: always
+    networks:
+      - internal_network
+
+volumes:
+  mongodb_data:
+
+networks:
+  internal_network:
+    external: true

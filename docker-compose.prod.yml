@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   app:
-    container_name: whatsapp-api
+    container_name: whatsapp-api-prod
     build:
       context: .
       dockerfile: Dockerfile
@@ -24,7 +24,7 @@ services:
 
   mongodb:
     image: mongo
-    container_name: mongodb
+    container_name: mongodb-prod
     ports:
       - "${MONGODB_PORT}:${MONGODB_PORT}"
     environment:
