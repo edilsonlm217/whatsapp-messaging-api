@@ -1,10 +1,7 @@
-import { IsString, IsNotEmpty, Matches } from 'class-validator';
+import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class SessionIdDto {
-  @IsString()
+  @IsEmail({}, { message: 'sessionId deve ser um e-mail válido' })
   @IsNotEmpty({ message: 'sessionId não pode estar vazio' })
-  @Matches(/^[a-zA-Z0-9-_]+$/, {
-    message: 'sessionId deve conter apenas letras, números, hífens ou underscores',
-  })
   sessionId: string;
 }
