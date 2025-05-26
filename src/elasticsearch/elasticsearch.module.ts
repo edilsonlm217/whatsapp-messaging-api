@@ -9,8 +9,13 @@ import { ElasticsearchService } from './elasticsearch.service';
       provide: Client,
       useFactory: (configService: ConfigService) => {
         return new Client({
-          node: configService.get<string>('ELASTICSEARCH_NODE')
+          node: configService.get<string>('ELASTICSEARCH_NODE'),
+          auth: {
+            username: configService.get<string>('ELASTICSEARCH_USERNAME') || '',
+            password: configService.get<string>('ELASTICSEARCH_PASSWORD') || '',
+          },
         });
+
       },
       inject: [ConfigService],
     },
