@@ -10,16 +10,16 @@ export class BaileysSocketListener {
 
   @OnEvent('ConnectionUpdate', { async: true })
   async onConnectionUpdate(event: StructuredEvent<ConnectionState>) {
-    await this.indexingService.indexEvent(event);
+    await this.indexingService.indexEvent('events-baileys-connection', event);
   }
 
   @OnEvent('CredsUpdate', { async: true })
   async onCredsUpdate(event: StructuredEvent<AuthenticationCreds>) {
-    await this.indexingService.indexEvent(event);
+    await this.indexingService.indexEvent('events-baileys-creds', event);
   }
 
   @OnEvent('MessageUpdate', { async: true })
   async handleMessageUpdate(event: StructuredEvent<WAMessageUpdate>) {
-    await this.indexingService.indexEvent(event);
+    await this.indexingService.indexEvent('events-baileys-messages', event);
   }
 }
