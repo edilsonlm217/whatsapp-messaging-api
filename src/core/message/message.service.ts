@@ -4,6 +4,7 @@ import { SessionStateService } from '../session/session-state/session-state.serv
 import { MessageRepository } from '../message/message.repository';
 import { MessageStatus } from 'src/common/enums/message-status.enum';
 import { proto } from '@whiskeysockets/baileys';
+import { EventEmitterService } from 'src/infrastructure/structured-event-emitter/event.emitter.service';
 
 @Injectable()
 export class MessageService {
@@ -11,6 +12,7 @@ export class MessageService {
     private readonly baileysSocketService: BaileysSocketService,
     private readonly sessionStateService: SessionStateService,
     private readonly messageRepository: MessageRepository,
+    private readonly eventEmitterService: EventEmitterService,
   ) { }
 
   /**
@@ -47,6 +49,14 @@ export class MessageService {
       sentAt: Date.now(),
       status: this.mapBaileysStatusToMessageStatus(sentMessage.status),
     });
+
+    this.eventEmitterService.emitEvent<proto.WebMessageInfo>(
+      sessionId,
+      'MessageSent',
+      'socket-messages',
+      MessageService.name,
+      sentMessage
+    );
 
     return sentMessage;
   }
