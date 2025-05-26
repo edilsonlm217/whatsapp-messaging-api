@@ -357,15 +357,26 @@
   dependencies:
     "@jridgewell/trace-mapping" "0.3.9"
 
-"@elastic/elasticsearch@7":
-  version "7.17.14"
-  resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-7.17.14.tgz#5ffd6d04e2be38b3dba56cf80af4359fc43b7f1f"
-  integrity sha512-6uQ1pVXutwz1Krwooo67W+3K8BwH1ASMh1WoHTpomUzw8EXecXN5lHIJ9EPqTHuv1WqR2LKkSJyagcq0HYUJpg==
+"@elastic/elasticsearch@8.13.0":
+  version "8.13.0"
+  resolved "https://registry.yarnpkg.com/@elastic/elasticsearch/-/elasticsearch-8.13.0.tgz#625c6fba3caf944370c6859482fbd5cf3543aea8"
+  integrity sha512-OAYgzqArPqgDaIJ1yT0RX31YCgr1lleo53zL+36i23PFjHu08CA6Uq+BmBzEV05yEidl+ILPdeSfF3G8hPG/JQ==
   dependencies:
-    debug "^4.3.1"
-    hpagent "^0.1.1"
+    "@elastic/transport" "^8.4.0"
+    tslib "^2.4.0"
+
+"@elastic/transport@^8.4.0":
+  version "8.9.6"
+  resolved "https://registry.yarnpkg.com/@elastic/transport/-/transport-8.9.6.tgz#f17eb2d042ea8fa2836dab56ed2446ca117146b1"
+  integrity sha512-v71jgmZtgPg2ouXF5KTPxU1a6z7YYc8nazAS7jLySteC/vrShs1OJh6oEEeo5oDc19MYUofV/JV1h5vqJVBXOw==
+  dependencies:
+    "@opentelemetry/api" "1.x"
+    debug "^4.4.0"
+    hpagent "^1.2.0"
     ms "^2.1.3"
-    secure-json-parse "^2.4.0"
+    secure-json-parse "^3.0.1"
+    tslib "^2.8.1"
+    undici "^6.21.1"
 
 "@eshaz/web-worker@1.2.2":
   version "1.2.2"
@@ -1138,6 +1149,11 @@
   integrity sha512-GXD3wy50qYbxCJ652bDrDzgMr3NFEkIS374+IgFQKkCvk9yiYcLvX2XDYr7UyQxf4wK0e+yqDYRubZ0DtOxnmQ==
   dependencies:
     consola "^3.2.3"
+
+"@opentelemetry/api@1.x":
+  version "1.9.0"
+  resolved "https://registry.yarnpkg.com/@opentelemetry/api/-/api-1.9.0.tgz#d03eba68273dc0f7509e2a3d5cba21eae10379fe"
+  integrity sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==
 
 "@pkgr/core@^0.1.0":
   version "0.1.1"
@@ -3848,10 +3864,10 @@ hookified@^1.7.1:
   resolved "https://registry.yarnpkg.com/hookified/-/hookified-1.8.1.tgz#74a8c97d36e5f8004d230ee2156a607cc84c358c"
   integrity sha512-GrO2l93P8xCWBSTBX9l2BxI78VU/MAAYag+pG8curS3aBGy0++ZlxrQ7PdUOUVMbn5BwkGb6+eRrnf43ipnFEA==
 
-hpagent@^0.1.1:
-  version "0.1.2"
-  resolved "https://registry.yarnpkg.com/hpagent/-/hpagent-0.1.2.tgz#cab39c66d4df2d4377dbd212295d878deb9bdaa9"
-  integrity sha512-ePqFXHtSQWAFXYmj+JtOTHr84iNrII4/QRlAAPPE+zqnKy4xJo7Ie1Y4kC7AdB+LxLxSTTzBMASsEcy0q8YyvQ==
+hpagent@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/hpagent/-/hpagent-1.2.0.tgz#0ae417895430eb3770c03443456b8d90ca464903"
+  integrity sha512-A91dYTeIB6NoXG+PxTQpCCDDnfHsW9kc06Lvpu1TEe9gnd6ZFeiBoRO9JvzEv6xK7EX97/dUE8g/vBMTqTS3CA==
 
 html-escaper@^2.0.0:
   version "2.0.2"
@@ -5659,10 +5675,10 @@ schema-utils@^4.3.0:
     ajv-formats "^2.1.1"
     ajv-keywords "^5.1.0"
 
-secure-json-parse@^2.4.0:
-  version "2.7.0"
-  resolved "https://registry.yarnpkg.com/secure-json-parse/-/secure-json-parse-2.7.0.tgz#5a5f9cd6ae47df23dba3151edd06855d47e09862"
-  integrity sha512-6aU+Rwsezw7VR8/nyvKTx8QpWH9FrcYiXXlqC4z5d5XQBDRqtbfsRjnwGyqbi3gddNtWHuEk9OANUotL26qKUw==
+secure-json-parse@^3.0.1:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/secure-json-parse/-/secure-json-parse-3.0.2.tgz#255b03bb0627ba5805f64f384b0a7691d8cb021b"
+  integrity sha512-H6nS2o8bWfpFEV6U38sOSjS7bTbdgbCGU9wEM6W14P5H0QOsz94KCusifV44GpHDTu2nqZbuDNhTzu+mjDSw1w==
 
 seek-bzip@^2.0.0:
   version "2.0.0"
@@ -6259,7 +6275,7 @@ tsconfig-paths@4.2.0, tsconfig-paths@^4.1.2, tsconfig-paths@^4.2.0:
     minimist "^1.2.6"
     strip-bom "^3.0.0"
 
-tslib@2.8.1, tslib@^2.1.0, tslib@^2.6.2:
+tslib@2.8.1, tslib@^2.1.0, tslib@^2.4.0, tslib@^2.6.2, tslib@^2.8.1:
   version "2.8.1"
   resolved "https://registry.yarnpkg.com/tslib/-/tslib-2.8.1.tgz#612efe4ed235d567e8aba5f2a5fab70280ade83f"
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==
@@ -6346,6 +6362,11 @@ undici-types@~6.20.0:
   version "6.20.0"
   resolved "https://registry.yarnpkg.com/undici-types/-/undici-types-6.20.0.tgz#8171bf22c1f588d1554d55bf204bc624af388433"
   integrity sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==
+
+undici@^6.21.1:
+  version "6.21.3"
+  resolved "https://registry.yarnpkg.com/undici/-/undici-6.21.3.tgz#185752ad92c3d0efe7a7d1f6854a50f83b552d7a"
+  integrity sha512-gBLkYIlEnSp8pFbT64yFgGE6UIB9tAkhukC23PmMDCe5Nd+cRqKxSjw5y54MK2AZMgZfJWMaNE4nYUHgi1XEOw==
 
 universalify@^2.0.0:
   version "2.0.1"
