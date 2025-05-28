@@ -25,8 +25,8 @@ export class MessageRepository {
    * @param messageId ID da mensagem a ser atualizada
    * @param status Novo status da mensagem
    */
-  async updateStatus(messageId: string, status: MessageStatus): Promise<void> {
-    await this.messageCollection.updateOne(
+  async updateStatus(messageId: string, status: MessageStatus) {
+    return this.messageCollection.updateOne(
       { messageId },
       { $set: { status } }, // Atualiza o status
     );

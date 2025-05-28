@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
-import { AuthenticationCreds, ConnectionState, WAMessageUpdate } from '@whiskeysockets/baileys';
+import { AuthenticationCreds, ConnectionState } from '@whiskeysockets/baileys';
 import { StructuredEvent } from 'src/common/structured-event.interface';
 import { EventIndexingService } from '../event-indexing.service';
 
@@ -16,10 +16,5 @@ export class BaileysSocketListener {
   @OnEvent('CredsUpdate', { async: true })
   async onCredsUpdate(event: StructuredEvent<AuthenticationCreds>) {
     await this.indexingService.indexEvent('events-baileys-creds', event);
-  }
-
-  @OnEvent('MessageUpdate', { async: true })
-  async handleMessageUpdate(event: StructuredEvent<WAMessageUpdate>) {
-    await this.indexingService.indexEvent('events-baileys-messages', event);
   }
 }

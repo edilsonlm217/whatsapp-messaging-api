@@ -2,9 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { BaileysSocketService } from '../session/baileys-socket/baileys-socket.service';
 import { SessionStateService } from '../session/session-state/session-state.service';
 import { MessageRepository } from '../message/message.repository';
-import { MessageStatus } from 'src/common/enums/message-status.enum';
 import { proto } from '@whiskeysockets/baileys';
 import { EventEmitterService } from 'src/infrastructure/structured-event-emitter/event.emitter.service';
+import { MessageStatusMapper } from 'src/common/enums/utils/message-status-mapper';
 
 @Injectable()
 export class MessageService {
@@ -47,7 +47,7 @@ export class MessageService {
       to,
       content: message,
       sentAt: Date.now(),
-      status: this.mapBaileysStatusToMessageStatus(sentMessage.status),
+      status: MessageStatusMapper.toInternalStatus(sentMessage.status),
     });
 
     this.eventEmitterService.emitEvent<proto.WebMessageInfo>(
@@ -67,20 +67,7 @@ export class MessageService {
    * @param status Novo status da mensagem
    */
   async updateMessageStatus(messageId: string, status: proto.WebMessageInfo.Status) {
-    const messageStatus = this.mapBaileysStatusToMessageStatus(status);
+    const messageStatus = MessageStatusMapper.toInternalStatus(status);
     return this.messageRepository.updateStatus(messageId, messageStatus);
-  }
-
-  mapBaileysStatusToMessageStatus(status: proto.WebMessageInfo.Status): MessageStatus {
-    console.log('mapBaileysStatusToMessageStatus', status);
-    switch (status) {
-      case 0: return MessageStatus.Error;
-      case 1: return MessageStatus.Pending;
-      case 2: return MessageStatus.ServerAck;
-      case 3: return MessageStatus.DeliveryAck;
-      case 4: return MessageStatus.Read;
-      case 5: return MessageStatus.Played;
-      default: return MessageStatus.Error;
-    }
   }
 }
