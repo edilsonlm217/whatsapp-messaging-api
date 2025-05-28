@@ -7,7 +7,7 @@ import { MessageStatusMapper } from 'src/common/enums/utils/message-status-mappe
 import { WAMessageUpdate } from '@whiskeysockets/baileys';
 
 @Injectable()
-export class updateListener {
+export class MessageUpdateListener {
   constructor(
     private readonly messageService: MessageService,
     private readonly indexingService: EventIndexingService,
