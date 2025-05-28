@@ -13,7 +13,7 @@ export class MessageUpdateListener {
     private readonly indexingService: EventIndexingService,
   ) { }
 
-  @OnEvent('update', { async: true })
+  @OnEvent('MessageUpdate', { async: true })
   async handleupdate(event: StructuredEvent<WAMessageUpdate>) {
     const msgUpdate = event.payload;
     if (!msgUpdate.key.id || !msgUpdate.update.status) { return }
