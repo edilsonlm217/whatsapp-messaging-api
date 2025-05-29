@@ -1,4 +1,4 @@
-import { MessageStatus } from 'src/common/enums/message-status.enum';
+import { proto } from '@whiskeysockets/baileys';
 
 /**
  * Representa os dados necessários para criar/persistir uma mensagem de texto enviada via WhatsApp.
@@ -27,5 +27,5 @@ export class CreateMessageDto {
   /**
    * Status atual da mensagem no ciclo de entrega (ex: pending, delivered, read, etc.).
    */
-  status: MessageStatus;
+  status: proto.WebMessageInfo.Status;
 }
