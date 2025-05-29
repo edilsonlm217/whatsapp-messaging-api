@@ -4,11 +4,10 @@ import { BaileysSocketModule } from '../session/baileys-socket/baileys-socket.mo
 import { MessageController } from './message.controller';
 import { SessionStateModule } from '../session/session-state/session-state.module';
 import { MessageRepository } from './message.repository';
-import { EventIndexingModule } from 'src/infrastructure/event-indexing/event-indexing.module';
 import { MessageUpdateListener } from './message-update.listener';
 
 @Module({
-  imports: [BaileysSocketModule, SessionStateModule, EventIndexingModule],
+  imports: [BaileysSocketModule, SessionStateModule],
   controllers: [MessageController],
   providers: [MessageService, MessageRepository, MessageUpdateListener],
   exports: [MessageService]
