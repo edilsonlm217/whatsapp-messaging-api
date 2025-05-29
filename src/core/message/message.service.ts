@@ -4,7 +4,7 @@ import { SessionStateService } from '../session/session-state/session-state.serv
 import { MessageRepository } from '../message/message.repository';
 import { proto } from '@whiskeysockets/baileys';
 import { EventEmitterService } from 'src/infrastructure/structured-event-emitter/event.emitter.service';
-import { MessageStatusMapper } from 'src/common/enums/utils/message-status-mapper';
+import { MessageStatusPayload } from 'src/common/message-status-payload.interface';
 
 @Injectable()
 export class MessageService {
@@ -47,15 +47,19 @@ export class MessageService {
       to,
       content: message,
       sentAt: Date.now(),
-      status: MessageStatusMapper.toInternalStatus(sentMessage.status),
+      status: sentMessage.status,
     });
 
-    this.eventEmitterService.emitEvent<proto.WebMessageInfo>(
+    this.eventEmitterService.emitEvent<MessageStatusPayload>(
       sessionId,
       'MessageSent',
       'socket-messages',
       MessageService.name,
-      sentMessage
+      {
+        id: sentMessage.key.id,
+        message: sentMessage.message?.extendedTextMessage?.text,
+        ackStatus: sentMessage.status,
+      }
     );
 
     return sentMessage;
@@ -67,7 +71,6 @@ export class MessageService {
    * @param status Novo status da mensagem
    */
   async updateMessageStatus(messageId: string, status: proto.WebMessageInfo.Status) {
-    const messageStatus = MessageStatusMapper.toInternalStatus(status);
-    return this.messageRepository.updateStatus(messageId, messageStatus);
+    return this.messageRepository.updateMessageStatus(messageId, status);
   }
 }
