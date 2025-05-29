@@ -2,15 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { StructuredEvent } from 'src/common/structured-event.interface';
 import { MessageService } from './message.service';
-import { EventIndexingService } from 'src/infrastructure/event-indexing/event-indexing.service';
-import { MessageStatusMapper } from 'src/common/enums/utils/message-status-mapper';
 import { WAMessageUpdate } from '@whiskeysockets/baileys';
+import { EventEmitterService } from 'src/infrastructure/structured-event-emitter/event.emitter.service';
+import { MessageStatusPayload } from 'src/common/message-status-payload.interface';
 
 @Injectable()
 export class MessageUpdateListener {
   constructor(
     private readonly messageService: MessageService,
-    private readonly indexingService: EventIndexingService,
+    private readonly eventEmitterService: EventEmitterService,
   ) { }
 
   @OnEvent('MessageUpdate', { async: true })
@@ -18,15 +18,21 @@ export class MessageUpdateListener {
     const msgUpdate = event.payload;
     if (!msgUpdate.key.id || !msgUpdate.update.status) { return }
 
-    const result = await this.messageService.updateMessageStatus(
+    await this.messageService.updateMessageStatus(
       msgUpdate.key.id,
       msgUpdate.update.status
     );
 
-    if (result.matchedCount === 0 || result.modifiedCount === 0) { return }
-
-    const statusLabel = MessageStatusMapper.toInternalStatus(msgUpdate.update.status);
-    msgUpdate.update['statusLabel'] = statusLabel;
-    await this.indexingService.indexEvent('events-baileys-messages', event);
+    this.eventEmitterService.emitEvent<MessageStatusPayload>(
+      event.sessionId,
+      'MessageUpdatePersisted',
+      'message.update.persistence',
+      MessageUpdateListener.name,
+      {
+        id: msgUpdate.key.id,
+        message: undefined,
+        ackStatus: msgUpdate.update.status,
+      }
+    );
   }
 }
