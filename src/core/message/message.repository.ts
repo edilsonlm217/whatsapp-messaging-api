@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { Db, Collection } from 'mongodb';
+import { Db, Collection, Int32 } from 'mongodb';
 import { Inject } from '@nestjs/common';
 import { CreateMessageDto } from './create-message.dto';
-import { MessageStatus } from 'src/common/enums/message-status.enum';
+import { proto } from '@whiskeysockets/baileys';
 
 @Injectable()
 export class MessageRepository {
@@ -20,15 +20,15 @@ export class MessageRepository {
     await this.messageCollection.insertOne(createMessageDto); // Realiza a persistência
   }
 
-  /**
-   * Atualizar o status de uma mensagem existente.
-   * @param messageId ID da mensagem a ser atualizada
-   * @param status Novo status da mensagem
-   */
-  async updateStatus(messageId: string, status: MessageStatus) {
+  async updateMessageStatus(messageId: string, newStatus: proto.WebMessageInfo.Status) {
     return this.messageCollection.updateOne(
-      { messageId },
-      { $set: { status } }, // Atualiza o status
+      {
+        messageId,
+        status: { $lt: newStatus },
+      },
+      {
+        $set: { status: newStatus },
+      }
     );
   }
 }
