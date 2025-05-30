@@ -31,7 +31,7 @@ export class MessageUpdateListener {
         MessageUpdateListener.name,
         {
           id: msgUpdate.key.id,
-          message: undefined,
+          messageText: undefined,
           ackStatus: msgUpdate.update.status,
         }
       );

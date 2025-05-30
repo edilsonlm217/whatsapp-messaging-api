@@ -57,7 +57,7 @@ export class MessageService {
       MessageService.name,
       {
         id: sentMessage.key.id,
-        message: sentMessage.message?.extendedTextMessage?.text,
+        messageText: sentMessage.message?.extendedTextMessage?.text,
         ackStatus: sentMessage.status,
       }
     );
