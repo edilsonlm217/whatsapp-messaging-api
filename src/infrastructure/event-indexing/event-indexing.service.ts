@@ -12,8 +12,7 @@ export class EventIndexingService {
     private readonly configService: ConfigService,
   ) {
     const appId = this.configService.get<string>('ELASTICSEARCH_APP_ID') || 'default-app';
-    const env = this.configService.get<string>('APP_ENV') || 'dev';
-    this.prefix = `${appId}-${env}`;
+    this.prefix = `${appId}`;
   }
 
   async indexEvent(index: string, event: StructuredEvent<any>): Promise<void> {
