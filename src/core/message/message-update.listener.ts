@@ -18,21 +18,23 @@ export class MessageUpdateListener {
     const msgUpdate = event.payload;
     if (!msgUpdate.key.id || !msgUpdate.update.status) { return }
 
-    await this.messageService.updateMessageStatus(
+    const result = await this.messageService.updateMessageStatus(
       msgUpdate.key.id,
       msgUpdate.update.status
     );
 
-    this.eventEmitterService.emitEvent<MessageStatusPayload>(
-      event.sessionId,
-      'MessageUpdatePersisted',
-      'message.update.persistence',
-      MessageUpdateListener.name,
-      {
-        id: msgUpdate.key.id,
-        message: undefined,
-        ackStatus: msgUpdate.update.status,
-      }
-    );
+    if (result.matchedCount === 1) {
+      this.eventEmitterService.emitEvent<MessageStatusPayload>(
+        event.sessionId,
+        'MessageUpdatePersisted',
+        'message.update.persistence',
+        MessageUpdateListener.name,
+        {
+          id: msgUpdate.key.id,
+          message: undefined,
+          ackStatus: msgUpdate.update.status,
+        }
+      );
+    }
   }
 }
