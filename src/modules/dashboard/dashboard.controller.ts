@@ -6,7 +6,7 @@ import { GetDashboardSnapshotDto } from "src/common/get-dashboard-snapshot.dto";
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) { }
 
-  @Get()
+  @Get('/')
   async getDashboardSnapshot(
     @Query() query: GetDashboardSnapshotDto
   ) {
