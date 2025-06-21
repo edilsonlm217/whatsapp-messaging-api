@@ -43,6 +43,7 @@ export class MessageService {
 
     // Persiste a mensagem no banco de dados
     await this.messageRepository.create({
+      sessionId: sessionId,
       messageId: sentMessage.key.id,
       to,
       content: message,
@@ -72,5 +73,27 @@ export class MessageService {
    */
   async updateMessageStatus(messageId: string, status: proto.WebMessageInfo.Status) {
     return this.messageRepository.updateMessageStatus(messageId, status);
+  }
+
+  async getMessagesByRange(sessionId: string, range: string) {
+    const startDate = this.translateRangeToDate(range);
+    const startTimestamp = Math.floor(startDate.getTime() / 1000);
+    return this.messageRepository.findMessagesBySentAt(sessionId, startTimestamp);
+  }
+
+  private translateRangeToDate(range: string): Date {
+    const now = new Date();
+    switch (range) {
+      case '1h':
+        return new Date(now.getTime() - 1000 * 60 * 60);
+      case '24h':
+        return new Date(now.getTime() - 1000 * 60 * 60 * 24);
+      case '7d':
+        return new Date(now.getTime() - 1000 * 60 * 60 * 24 * 7);
+      case '30d':
+        return new Date(now.getTime() - 1000 * 60 * 60 * 24 * 30);
+      default:
+        return new Date(now.getTime() - 1000 * 60 * 60 * 24 * 7);
+    }
   }
 }

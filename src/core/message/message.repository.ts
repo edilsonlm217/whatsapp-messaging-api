@@ -4,6 +4,15 @@ import { Inject } from '@nestjs/common';
 import { CreateMessageDto } from './create-message.dto';
 import { proto } from '@whiskeysockets/baileys';
 
+export interface Message {
+  sessionId: string;
+  messageId: string;
+  to: string;
+  content: string;
+  sentAt: number;
+  status: proto.WebMessageInfo.Status;
+}
+
 @Injectable()
 export class MessageRepository {
   private messageCollection: Collection;
@@ -30,5 +39,22 @@ export class MessageRepository {
         $set: { status: newStatus },
       }
     );
+  }
+
+  async findMessagesBySentAt(sessionId: string, startTimestamp: number): Promise<Message[]> {
+    const docs = await this.messageCollection.find({
+      sessionId: sessionId,
+      sentAt: { $gte: startTimestamp }
+    }).toArray();
+
+    // Mapeia cada doc para Message, garantindo os campos
+    return docs.map(doc => ({
+      sessionId: doc.sessionId,
+      messageId: doc.messageId,
+      to: doc.to,
+      content: doc.content,
+      sentAt: doc.sentAt,
+      status: doc.status,
+    }));
   }
 }
