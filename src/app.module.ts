@@ -6,6 +6,7 @@ import { SessionModule } from './core/session/session.module';
 import { EventIndexingModule } from './infrastructure/event-indexing/event-indexing.module';
 import { StructuredEventEmitterModule } from './infrastructure/structured-event-emitter/structured-event-emitter.module';
 import { MessageModule } from './core/message/message.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { MessageModule } from './core/message/message.module';
     MessageModule,
     StructuredEventEmitterModule,
     EventIndexingModule,
+    DashboardModule
   ],
   controllers: [],
   providers: [],
