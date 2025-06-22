@@ -9,8 +9,8 @@ export class DashboardService {
     const messages = await this.messageService.getMessagesByRange(sessionId, range);
 
     const totalMessages = messages.length;
-
-    const { totalSent, totalDelivered, totalRead, totalError, totalPending } = messages.reduce(
+    const totalSent = totalMessages;
+    const { totalDelivered, totalRead, totalError, totalPending } = messages.reduce(
       (acc, m) => {
         if (m.status === 0) acc.totalError++;
         if (m.status === 1) acc.totalPending++;
