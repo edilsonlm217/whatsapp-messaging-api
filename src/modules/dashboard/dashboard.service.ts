@@ -8,6 +8,8 @@ export class DashboardService {
   async getSnapshot(range: string, sessionId: string) {
     const messages = await this.messageService.getMessagesByRange(sessionId, range);
 
+    const totalMessages = messages.length;
+
     const { totalSent, totalDelivered, totalRead, totalError, totalPending } = messages.reduce(
       (acc, m) => {
         if (m.status === 0) acc.totalError++;
@@ -35,6 +37,7 @@ export class DashboardService {
       .slice(0, 5);
 
     return {
+      totalMessages,
       totalSent,
       totalDelivered,
       totalRead,
