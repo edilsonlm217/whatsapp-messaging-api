@@ -23,7 +23,7 @@ export class DashboardService {
 
     // Calculate existing metrics
     const deliveryRate = totalSent > 0 ? (totalDelivered / totalSent) * 100 : 0;
-    const readRate = totalSent > 0 ? (totalRead / totalSent) * 100 : 0;
+    const readRate = totalSent > 0 ? (totalRead / totalDelivered) * 100 : 0;
     const undeliveredMessages = totalSent - totalDelivered;
     const deliveredButUnreadMessages = totalDelivered - totalRead;
 
