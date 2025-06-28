@@ -77,7 +77,7 @@ export class MessageService {
 
   async getMessagesByRange(sessionId: string, range: string) {
     const startDate = this.translateRangeToDate(range);
-    const startTimestamp = Math.floor(startDate.getTime() / 1000);
+    const startTimestamp = startDate.getTime(); // já em milissegundos
     return this.messageRepository.findMessagesBySentAt(sessionId, startTimestamp);
   }
 
