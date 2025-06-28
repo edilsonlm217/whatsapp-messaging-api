@@ -1,9 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { MessageService } from 'src/core/message/message.service';
+import { SessionState } from 'src/core/session/session-state/session-state.model';
+import { SessionService } from 'src/core/session/session.service';
 
 @Injectable()
 export class DashboardService {
-  constructor(private readonly messageService: MessageService) { }
+  constructor(
+    private readonly sessionService: SessionService,
+    private readonly messageService: MessageService,
+  ) { }
 
   async getSnapshot(range: string, sessionId: string) {
     const messages = await this.messageService.getMessagesByRange(sessionId, range);
@@ -35,6 +40,15 @@ export class DashboardService {
       .sort((a, b) => b.sentAt - a.sentAt)
       .slice(0, 5);
 
+    // Pega o estado atual da sessão
+    let sessionState: null | SessionState = null;
+    try {
+      sessionState = this.sessionService.getSessionState(sessionId);
+    } catch {
+      // Caso não exista estado (sessão desconectada ou inexistente), deixa null
+      sessionState = null;
+    }
+
     return {
       totalMessages,
       totalSent,
@@ -44,12 +58,12 @@ export class DashboardService {
       totalPending,
       deliveryRate: parseFloat(deliveryRate.toFixed(2)),
       readRate: parseFloat(readRate.toFixed(2)),
-      errorRate: parseFloat(errorRate.toFixed(2)),   // Taxa de Erro adicionada
-      pendingRate: parseFloat(pendingRate.toFixed(2)), // Taxa de Pendentes adicionada
+      errorRate: parseFloat(errorRate.toFixed(2)),
+      pendingRate: parseFloat(pendingRate.toFixed(2)),
       undeliveredMessages,
       deliveredButUnreadMessages,
       recentMessages,
-      // demais dados e agregações aqui
+      sessionState,
     };
   }
 }

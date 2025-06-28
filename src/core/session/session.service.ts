@@ -57,4 +57,11 @@ export class SessionService {
     if (!subject) { throw new Error('Session state stream not found') }
     return subject;
   }
+
+  // Retorna o estado atual (estático) da sessão
+  getSessionState(sessionId: string) {
+    const sessionState = this.sessionStateService.getSessionState(sessionId);
+    if (!sessionState) { throw new Error('Session state not found') }
+    return sessionState;
+  }
 }
