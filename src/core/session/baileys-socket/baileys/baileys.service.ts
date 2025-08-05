@@ -7,10 +7,7 @@ export class BaileysService {
   constructor(private readonly eventEmitterService: EventEmitterService) { }
 
   createSocket(sessionId: string, state: AuthenticationState): WASocket {
-    const socket = makeWASocket({
-      auth: state,
-      printQRInTerminal: process.env.WA_PRINT_QR_IN_TERMINAL === 'true'
-    });
+    const socket = makeWASocket({ auth: state });
 
     // Evento de conexão
     socket.ev.on('connection.update', (update) => {
