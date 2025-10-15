@@ -7,7 +7,10 @@ export class BaileysService {
   constructor(private readonly eventEmitterService: EventEmitterService) { }
 
   createSocket(sessionId: string, state: AuthenticationState): WASocket {
-    const socket = makeWASocket({ auth: state });
+    const socket = makeWASocket({
+      auth: state,
+      version: [2, 3000, 1025190524],
+    });
 
     // Evento de conexão
     socket.ev.on('connection.update', (update) => {
